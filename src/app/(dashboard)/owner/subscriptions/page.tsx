@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import toast from "react-hot-toast";
 
 interface SubRecord {
   id: string;
@@ -136,12 +137,14 @@ export default function OwnerSubscriptionsPage() {
         body: JSON.stringify(createData),
       });
       if (res.ok) {
+        toast.success("Subscription assigned successfully!");
         setShowAddModal(false);
         setCreateData(emptyCreate);
         fetchSubs();
       } else {
         const err = await res.json();
         setError(err.message);
+        toast.error(err.message || "Failed to assign subscription");
       }
     } finally {
       setSubmitting(false);
@@ -172,11 +175,13 @@ export default function OwnerSubscriptionsPage() {
         body: JSON.stringify(editData),
       });
       if (res.ok) {
+        toast.success("Subscription updated!");
         setShowEditModal(false);
         fetchSubs();
       } else {
         const err = await res.json();
         setError(err.message);
+        toast.error(err.message || "Failed to update subscription");
       }
     } finally {
       setSubmitting(false);
@@ -190,11 +195,13 @@ export default function OwnerSubscriptionsPage() {
     try {
       const res = await fetch(`/api/subscriptions/${showCancelConfirm.id}`, { method: "DELETE" });
       if (res.ok) {
+        toast.success("Subscription cancelled.");
         setShowCancelConfirm(null);
         fetchSubs();
       } else {
         const err = await res.json();
         alert(err.message);
+        toast.error(err.message || "Failed to cancel subscription");
       }
     } finally {
       setSubmitting(false);

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell, Eye, Calendar, CreditCard, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import toast from "react-hot-toast";
 
 interface UserRecord {
   id: string;
@@ -130,12 +131,14 @@ export default function OwnerUsersPage() {
         body: JSON.stringify(createData),
       });
       if (res.ok) {
+        toast.success("User added successfully!");
         setShowAddModal(false);
         setCreateData(emptyCreate);
         fetchUsers();
       } else {
         const err = await res.json();
         alert(err.message);
+        toast.error(err.message || "Failed to add user");
       }
     } finally {
       setSubmitting(false);
@@ -158,11 +161,13 @@ export default function OwnerUsersPage() {
         body: JSON.stringify(editData),
       });
       if (res.ok) {
+        toast.success("User updated!");
         setShowEditModal(false);
         fetchUsers();
       } else {
         const err = await res.json();
         alert(err.message);
+        toast.error(err.message || "Failed to update user");
       }
     } finally {
       setSubmitting(false);
@@ -175,11 +180,13 @@ export default function OwnerUsersPage() {
     try {
       const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
       if (res.ok) {
+        toast.success("User deactivated.");
         setShowDeleteConfirm(null);
         fetchUsers();
       } else {
         const err = await res.json();
         alert(err.message);
+        toast.error(err.message || "Failed to deactivate user");
       }
     } finally {
       setSubmitting(false);

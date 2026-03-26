@@ -52,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Dashboard", href: "/owner", icon: LayoutDashboard },
     { name: "Users & Staff", href: "/owner/users", icon: Users },
     { name: "Membership Plans", href: "/owner/plans", icon: Dumbbell },
+    { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
     { name: "Payments", href: "/owner/payments", icon: CreditCard },
     { name: "Gym Settings", href: "/owner/settings", icon: Settings },
   ];

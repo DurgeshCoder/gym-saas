@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit2, ShieldBan, Mail, Activity, Dumbbell, Users } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 
 interface UserRecord {
@@ -13,77 +13,137 @@ interface UserRecord {
   createdAt: string;
 }
 
-export default function UsersManagementPage() {
+export default function OwnerUsersPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Pagination (client-side for now since API returns all)
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Search/Filter
+  // Search / Filters
   const [search, setSearch] = useState("");
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({ role: "" });
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({
+    role: "",
+    status: "",
+    sortBy: "",
+  });
 
-  // Modal
+  // Modals
   const [showAddModal, setShowAddModal] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "MEMBER" });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Forms
+  const emptyCreate = { name: "", email: "", password: "", role: "MEMBER" };
+  const emptyEdit = { id: "", name: "", email: "", password: "", role: "MEMBER", active: true };
+  const [createData, setCreateData] = useState(emptyCreate);
+  const [editData, setEditData] = useState(emptyEdit);
 
-  const fetchUsers = async () => {
+  // Fetch
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/users");
-      if (res.ok) setUsers(await res.json());
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+      if (search) params.set("search", search);
+      if (filterValues.role) params.set("role", filterValues.role);
+      if (filterValues.status) params.set("status", filterValues.status);
+      if (filterValues.sortBy) params.set("sortBy", filterValues.sortBy);
+
+      const res = await fetch(`/api/users?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        setUsers(json.data);
+        setTotalItems(json.total);
+        setTotalPages(json.totalPages);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize, search, filterValues]);
 
-  // Client-side filtering + pagination
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch =
-      !search ||
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = !filterValues.role || u.role === filterValues.role;
-    return matchesSearch && matchesRole;
-  });
-
-  const totalItems = filteredUsers.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [search, filterValues, pageSize]);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  // Create
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(createData),
       });
       if (res.ok) {
         setShowAddModal(false);
-        setFormData({ name: "", email: "", password: "", role: "MEMBER" });
+        setCreateData(emptyCreate);
         fetchUsers();
       } else {
-        const error = await res.json();
-        alert(error.message);
+        const err = await res.json();
+        alert(err.message);
       }
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Edit
+  const openEdit = (u: UserRecord) => {
+    setEditData({ id: u.id, name: u.name, email: u.email, password: "", role: u.role, active: u.active });
+    setShowEditModal(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/users/${editData.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editData),
+      });
+      if (res.ok) {
+        setShowEditModal(false);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.message);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Deactivate / Delete
+  const handleDeactivate = async (id: string) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setShowDeleteConfirm(null);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.message);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Filters
   const filters: FilterConfig[] = [
     {
       key: "role",
@@ -93,8 +153,26 @@ export default function UsersManagementPage() {
         { label: "Member", value: "MEMBER" },
       ],
     },
+    {
+      key: "status",
+      label: "All Status",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+      ],
+    },
+    {
+      key: "sortBy",
+      label: "Sort By",
+      options: [
+        { label: "Newest First", value: "createdAt" },
+        { label: "Name", value: "name" },
+        { label: "Email", value: "email" },
+      ],
+    },
   ];
 
+  // Columns
   const columns: Column<UserRecord>[] = [
     {
       key: "user",
@@ -140,7 +218,7 @@ export default function UsersManagementPage() {
               : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${u.active ? "bg-emerald-500" : "bg-rose-500"}`}></span>
+          <span className={`w-1.5 h-1.5 rounded-full ${u.active ? "bg-emerald-500" : "bg-rose-500"}`} />
           {u.active ? "Active" : "Inactive"}
         </span>
       ),
@@ -155,24 +233,29 @@ export default function UsersManagementPage() {
       header: "Actions",
       align: "right",
       render: (u) => (
-        <div className="flex justify-end gap-2">
-          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+        <div className="flex justify-end gap-1">
+          <button onClick={() => openEdit(u)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
             <Edit2 className="w-4 h-4" />
           </button>
-          <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors">
-            <ShieldBan className="w-4 h-4" />
-          </button>
+          {u.active && (
+            <button onClick={() => setShowDeleteConfirm(u.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Deactivate">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },
   ];
 
+  const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white";
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Staff & Members</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your trainers and gym members</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Users & Staff</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage trainers and members in your gym</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -183,7 +266,7 @@ export default function UsersManagementPage() {
         </button>
       </div>
 
-      {/* Universal Search + Filters */}
+      {/* Search + Filters */}
       <SearchFilterBar
         searchPlaceholder="Search by name or email..."
         searchValue={search}
@@ -191,18 +274,18 @@ export default function UsersManagementPage() {
         filters={filters}
         filterValues={filterValues}
         onFilterChange={(key, value) => setFilterValues((f) => ({ ...f, [key]: value }))}
-        onClearFilters={() => setFilterValues({ role: "" })}
+        onClearFilters={() => setFilterValues({ role: "", status: "", sortBy: "" })}
       />
 
-      {/* Universal DataTable */}
+      {/* DataTable */}
       <DataTable<UserRecord>
         columns={columns}
-        data={paginatedUsers}
+        data={users}
         loading={loading}
         rowKey={(u) => u.id}
         emptyIcon={<Users className="w-8 h-8 text-slate-400" />}
         emptyTitle="No users found"
-        emptyDescription="You haven't added any trainers or members yet."
+        emptyDescription="Add trainers and members to get started."
         emptyAction={
           <button onClick={() => setShowAddModal(true)} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm">
             Add First User
@@ -216,45 +299,97 @@ export default function UsersManagementPage() {
         onPageSizeChange={setPageSize}
       />
 
-      {/* Add User Modal */}
+      {/* ── Create User Modal ── */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add New User</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">
-                &times;
-              </button>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Plus className="w-5 h-5" /> Add New User</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
-            <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+            <form onSubmit={handleCreate} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="John Doe" />
+                <input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} className={inputCls} placeholder="John Doe" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                <input required type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="john@example.com" />
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                <input required type="email" value={createData.email} onChange={(e) => setCreateData({ ...createData, email: e.target.value })} className={inputCls} placeholder="john@example.com" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
-                <input required type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="••••••••" />
+                <input required type="password" value={createData.password} onChange={(e) => setCreateData({ ...createData, password: e.target.value })} className={inputCls} placeholder="••••••••" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white">
+                <select value={createData.role} onChange={(e) => setCreateData({ ...createData, role: e.target.value })} className={inputCls}>
                   <option value="MEMBER">Member</option>
                   <option value="TRAINER">Trainer</option>
                 </select>
               </div>
               <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">
-                  Cancel
-                </button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">
-                  {submitting ? "Adding..." : "Add User"}
-                </button>
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
+                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Adding..." : "Add User"}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit User Modal ── */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Edit2 className="w-5 h-5" /> Edit User</h3>
+              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form onSubmit={handleEdit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                <input required type="email" value={editData.email} onChange={(e) => setEditData({ ...editData, email: e.target.value })} className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password <span className="text-slate-400 font-normal">(leave empty to keep current)</span></label>
+                <input type="password" value={editData.password} onChange={(e) => setEditData({ ...editData, password: e.target.value })} className={inputCls} placeholder="••••••••" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
+                <select value={editData.role} onChange={(e) => setEditData({ ...editData, role: e.target.value })} className={inputCls}>
+                  <option value="MEMBER">Member</option>
+                  <option value="TRAINER">Trainer</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <input type="checkbox" checked={editData.active} onChange={(e) => setEditData({ ...editData, active: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Account Active</span>
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
+                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Saving..." : "Save Changes"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Deactivate Confirmation ── */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-700 p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-7 h-7 text-rose-600 dark:text-rose-400" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Deactivate User?</h3>
+            <p className="text-sm text-slate-500 mb-6">This user will be deactivated and will no longer have access to the gym.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
+              <button onClick={() => handleDeactivate(showDeleteConfirm)} disabled={submitting} className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Processing..." : "Deactivate"}</button>
+            </div>
           </div>
         </div>
       )}

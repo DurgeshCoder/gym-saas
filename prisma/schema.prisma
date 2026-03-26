@@ -16,6 +16,12 @@ model Gym {
   name      String
   logo      String?
   address   String?
+  phone     String?
+  email     String?
+  website   String?
+  description String? @db.Text
+  openingHours Json?
+  socialLinks  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

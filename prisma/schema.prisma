@@ -32,6 +32,7 @@ model Gym {
   plans         Plan[]
   subscriptions Subscription[]
   payments      Payment[]
+  workoutPlans  WorkoutPlan[]  @relation("GymWorkoutPlans")
 }
 
 // -----------------------------------------------------------------------------
@@ -70,6 +71,10 @@ model User {
   trainer         User?     @relation("TrainerMembers", fields: [trainerId], references: [id])
   trainerId       String?
   bookingsAsTrainer Booking[] @relation("TrainerBookings")
+
+  // Workout Plans
+  createdWorkoutPlans  WorkoutPlan[] @relation("CreatedWorkoutPlans")
+  assignedWorkoutPlans MemberWorkoutPlan[] @relation("AssignedWorkoutPlans")
 }
 
 // -----------------------------------------------------------------------------
@@ -159,3 +164,102 @@ model Attendance {
   user      User     @relation(fields: [userId], references: [id])
   date      DateTime @default(now())
 }
+
+// -----------------------------------------------------------------------------
+// ENUMS FOR WORKOUT PLANS
+// -----------------------------------------------------------------------------
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum WorkoutGoal {
+  FAT_LOSS
+  MUSCLE_GAIN
+  STRENGTH
+  GENERAL_FITNESS
+}
+
+enum PlanStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// -----------------------------------------------------------------------------
+// WORKOUT PLAN MODULE
+// -----------------------------------------------------------------------------
+model WorkoutPlan {
+  id          String          @id @default(cuid())
+  name        String
+  description String?         @db.Text
+  difficulty  DifficultyLevel
+  goal        WorkoutGoal
+  duration    Int             // Duration in days
+  
+  gymId       String
+  gym         Gym             @relation("GymWorkoutPlans", fields: [gymId], references: [id], onDelete: Cascade)
+  
+  creatorId   String
+  creator     User            @relation("CreatedWorkoutPlans", fields: [creatorId], references: [id])
+  
+  days        WorkoutDay[]
+  assignments MemberWorkoutPlan[]
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([gymId])
+  @@index([creatorId])
+}
+
+model WorkoutDay {
+  id            String      @id @default(cuid())
+  dayNumber     Int         // e.g., 1, 2, 3
+  title         String?     // e.g., "Leg Day", "Push"
+  notes         String?     @db.Text
+  
+  workoutPlanId String
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  
+  exercises     Exercise[]
+
+  @@index([workoutPlanId])
+}
+
+model Exercise {
+  id           String     @id @default(cuid())
+  name         String
+  sets         Int
+  reps         String     // String for flexibility (e.g., "10-12", "To failure")
+  restTime     Int        // Rest time in seconds
+  notes        String?    @db.Text
+  order        Int        // Sorting order
+  
+  workoutDayId String
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+
+  @@index([workoutDayId])
+}
+
+model MemberWorkoutPlan {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation("AssignedWorkoutPlans", fields: [userId], references: [id], onDelete: Cascade)
+  
+  workoutPlanId  String
+  workoutPlan    WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  
+  startDate      DateTime
+  endDate        DateTime?
+  status         PlanStatus  @default(ACTIVE)
+  progress       Float       @default(0.0) // Progress percentage 0-100
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([workoutPlanId])
+}
+

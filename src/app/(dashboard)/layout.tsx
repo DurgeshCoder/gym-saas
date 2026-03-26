@@ -14,6 +14,7 @@ import {
   CreditCard,
   Building2,
   ShieldCheck,
+  Activity,
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .then((data) => {
           if (data?.name) setGymName(data.name);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [gymId, role]);
 
@@ -52,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Dashboard", href: "/owner", icon: LayoutDashboard },
     { name: "Users & Staff", href: "/owner/users", icon: Users },
     { name: "Membership Plans", href: "/owner/plans", icon: Dumbbell },
+    { name: "Workout Plans", href: "/owner/workouts", icon: Activity },
     { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
     { name: "Payments", href: "/owner/payments", icon: CreditCard },
     { name: "Gym Settings", href: "/owner/settings", icon: Settings },
@@ -117,11 +119,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                  isActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
                     ? "bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`} />
                 {link.name}

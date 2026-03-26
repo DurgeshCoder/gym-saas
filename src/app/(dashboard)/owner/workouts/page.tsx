@@ -1,0 +1,222 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Dumbbell, UserPlus } from "lucide-react";
+import { DataTable, type Column, SearchFilterBar } from "@/components/shared";
+import toast from "react-hot-toast";
+import Link from "next/link";
+
+interface WorkoutPlan {
+    id: string;
+    name: string;
+    difficulty: string;
+    goal: string;
+    duration: number;
+    createdAt: string;
+    creator: { name: string };
+    _count: { days: number; assignments: number };
+}
+
+export default function OwnerWorkoutsPage() {
+    const [plans, setPlans] = useState<WorkoutPlan[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [selectedPlanId, setSelectedPlanId] = useState("");
+
+    const fetchPlans = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("/api/workouts");
+            if (res.ok) {
+                const json = await res.json();
+                setPlans(json.data || []);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchPlans();
+    }, [fetchPlans]);
+
+    const columns: Column<WorkoutPlan>[] = [
+        {
+            key: "name",
+            header: "Plan Name",
+            render: (p) => (
+                <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">{p.duration} Days • {p._count.days} Workouts</p>
+                </div>
+            ),
+        },
+        {
+            key: "difficulty",
+            header: "Difficulty",
+            render: (p) => (
+                <span className="px-2 py-1 rounded-lg text-[10px] font-black uppercase bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                    {p.difficulty}
+                </span>
+            ),
+        },
+        {
+            key: "goal",
+            header: "Goal",
+            render: (p) => (
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {p.goal.replace("_", " ")}
+                </span>
+            ),
+        },
+        {
+            key: "creator",
+            header: "Created By",
+            render: (p) => <span className="text-xs text-slate-500">{p.creator?.name || "Unknown"}</span>,
+        },
+        {
+            key: "assignments",
+            header: "Active Users",
+            render: (p) => <span className="font-bold text-slate-900 dark:text-white">{p._count.assignments}</span>,
+        },
+        {
+            key: "actions",
+            header: "Actions",
+            render: (p) => (
+                <button
+                    onClick={() => { setSelectedPlanId(p.id); setShowAssignModal(true); }}
+                    className="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
+                >
+                    <UserPlus className="w-3.5 h-3.5" /> Assign
+                </button>
+            ),
+        },
+    ];
+
+    const filteredPlans = plans.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+
+    const totalItems = filteredPlans.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+    const paginatedPlans = filteredPlans.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-700">
+                <div>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Workout Plans</h1>
+                    <p className="text-sm text-slate-500 font-medium mt-1">Design and assign professional routines to your members.</p>
+                </div>
+                <Link
+                    href="/owner/workouts/create"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
+                >
+                    <Plus className="w-4 h-4" />
+                    Create Plan
+                </Link>
+            </div>
+
+            <div className="pt-4 flex flex-col gap-5">
+                <SearchFilterBar
+                    searchPlaceholder="Search by plan name..."
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                />
+
+                <DataTable<WorkoutPlan>
+                    columns={columns}
+                    data={paginatedPlans}
+                    loading={loading}
+                    rowKey={p => p.id}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={setPageSize}
+                    emptyIcon={<Dumbbell className="w-10 h-10 text-slate-300" />}
+                    emptyTitle="No workout plans yet"
+                    emptyDescription="Create your first systematic workout plan to assign to members."
+                />
+            </div>
+
+            {showAssignModal && (
+                <AssignModal
+                    planId={selectedPlanId}
+                    onClose={() => setShowAssignModal(false)}
+                    onSuccess={() => { setShowAssignModal(false); fetchPlans(); }}
+                />
+            )}
+        </div>
+    );
+}
+
+function AssignModal({ planId, onClose, onSuccess }: { planId: string, onClose: () => void, onSuccess: () => void }) {
+    const [users, setUsers] = useState<{ id: string; name: string; email: string }[]>([]);
+    const [submitting, setSubmitting] = useState(false);
+    const [userId, setUserId] = useState("");
+    const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+
+    useEffect(() => {
+        fetch("/api/users?limit=100").then(res => res.json()).then(json => setUsers(json.data || []));
+    }, []);
+
+    const handleAssign = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const res = await fetch("/api/workouts/assign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    workoutPlanId: planId,
+                    userId,
+                    startDate: new Date(startDate).toISOString(),
+                })
+            });
+            if (res.ok) {
+                toast.success("Plan assigned effectively!");
+                onSuccess();
+            } else {
+                const err = await res.json();
+                toast.error(err.message || "Failed to assign plan");
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white">Assign Plan</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">&times;</button>
+                </div>
+                <form onSubmit={handleAssign} className="p-8 space-y-5">
+                    <div>
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
+                        <select required value={userId} onChange={e => setUserId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none">
+                            <option value="">— Select a member —</option>
+                            {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Start Date</label>
+                        <input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none" />
+                    </div>
+                    <div className="pt-4 flex gap-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-600">Cancel</button>
+                        <button type="submit" disabled={submitting} className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl disabled:opacity-50 transition-colors">
+                            {submitting ? "Assigning..." : "Assign"}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}

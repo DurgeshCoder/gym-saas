@@ -12,8 +12,9 @@ export default async function Home() {
   const role: string = (session.user as any).role;
 
   switch (role) {
-    case "GYM_OWNER":
     case "SUPER_ADMIN":
+      redirect("/super-admin");
+    case "GYM_OWNER":
       redirect("/owner");
     case "TRAINER":
       redirect("/trainer");

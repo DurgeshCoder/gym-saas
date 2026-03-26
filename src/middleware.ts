@@ -7,6 +7,10 @@ export default withAuth(
     const token = req.nextauth.token;
 
     // 1. Protect specific routes based on role (PRD Section 5)
+    if (pathname.startsWith("/super-admin") && token?.role !== "SUPER_ADMIN") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
+
     if (pathname.startsWith("/owner") && token?.role !== "GYM_OWNER" && token?.role !== "SUPER_ADMIN") {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
@@ -53,6 +57,7 @@ export const config = {
      * - /dashboard/*
      * - /api/gyms (but skip /api/auth)
      */
+    "/super-admin/:path*",
     "/owner/:path*",
     "/trainer/:path*",
     "/member/:path*",

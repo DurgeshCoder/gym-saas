@@ -44,8 +44,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Bookings", href: "/member/bookings", icon: CalendarDays },
   ];
 
+  const superAdminLinks = [
+    { name: "Super Admin", href: "/super-admin", icon: LayoutDashboard },
+    { name: "All Gyms", href: "/super-admin/gyms", icon: Dumbbell },
+    { name: "Global Users", href: "/super-admin/users", icon: Users },
+  ];
+
   let links = memberLinks;
-  if (role === "GYM_OWNER" || role === "SUPER_ADMIN") links = ownerLinks;
+  if (role === "GYM_OWNER") links = ownerLinks;
+  if (role === "SUPER_ADMIN") links = superAdminLinks;
   if (role === "TRAINER") links = trainerLinks;
 
   return (

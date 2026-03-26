@@ -14,6 +14,9 @@ import {
   Building2,
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface UserRecord {
   id: string;
@@ -72,7 +75,7 @@ export default function SuperAdminUsersPage() {
           const json = await res.json();
           setGymOptions(json.data.map((g: any) => ({ id: g.id, name: g.name })));
         }
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -287,11 +290,10 @@ export default function SuperAdminUsersPage() {
       header: "Status",
       render: (u) => (
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-            u.active
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${u.active
               ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
               : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
-          }`}
+            }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${u.active ? "bg-emerald-500" : "bg-rose-500"}`} />
           {u.active ? "Active" : "Inactive"}
@@ -328,16 +330,16 @@ export default function SuperAdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Global User Management</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage every user across all gym tenants.</p>
+          <h1 className="text-2xl font-extrabold text-foreground">Global User Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage every user across all gym tenants.</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all"
+          className="shadow-sm items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Create User
-        </button>
+        </Button>
       </div>
 
       {/* Search + Filters */}
@@ -369,136 +371,134 @@ export default function SuperAdminUsersPage() {
       />
 
       {/* ── Create User Modal ── */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-5 h-5" /> Create New User
-              </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" /> Create New User
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4 pt-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
+              <Input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} placeholder="John Doe" />
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+              <Input required type="email" value={createData.email} onChange={(e) => setCreateData({ ...createData, email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
+              <Input required type="password" value={createData.password} onChange={(e) => setCreateData({ ...createData, password: e.target.value })} placeholder="••••••••" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                <input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} className={inputCls} placeholder="John Doe" />
+                <label className="block text-sm font-medium text-foreground mb-1">Role</label>
+                <select value={createData.role} onChange={(e) => setCreateData({ ...createData, role: e.target.value })} className={inputCls}>
+                  <option value="MEMBER">Member</option>
+                  <option value="TRAINER">Trainer</option>
+                  <option value="GYM_OWNER">Gym Owner</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                <input required type="email" value={createData.email} onChange={(e) => setCreateData({ ...createData, email: e.target.value })} className={inputCls} placeholder="john@example.com" />
+                <label className="block text-sm font-medium text-foreground mb-1">Assign Gym</label>
+                <select value={createData.gymId} onChange={(e) => setCreateData({ ...createData, gymId: e.target.value })} className={inputCls}>
+                  <option value="">No Gym</option>
+                  {gymOptions.map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
-                <input required type="password" value={createData.password} onChange={(e) => setCreateData({ ...createData, password: e.target.value })} className={inputCls} placeholder="••••••••" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                  <select value={createData.role} onChange={(e) => setCreateData({ ...createData, role: e.target.value })} className={inputCls}>
-                    <option value="MEMBER">Member</option>
-                    <option value="TRAINER">Trainer</option>
-                    <option value="GYM_OWNER">Gym Owner</option>
-                    <option value="SUPER_ADMIN">Super Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assign Gym</label>
-                  <select value={createData.gymId} onChange={(e) => setCreateData({ ...createData, gymId: e.target.value })} className={inputCls}>
-                    <option value="">No Gym</option>
-                    {gymOptions.map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Creating..." : "Create User"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create User"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Edit User Modal ── */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Edit2 className="w-5 h-5" /> Update User
-              </h3>
-              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit2 className="w-5 h-5" /> Update User
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4 pt-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
+              <Input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} />
             </div>
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+              <Input required type="email" value={editData.email} onChange={(e) => setEditData({ ...editData, email: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">New Password <span className="text-muted-foreground font-normal">(leave empty to keep current)</span></label>
+              <Input type="password" value={editData.password} onChange={(e) => setEditData({ ...editData, password: e.target.value })} placeholder="••••••••" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                <input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={inputCls} />
+                <label className="block text-sm font-medium text-foreground mb-1">Role</label>
+                <select value={editData.role} onChange={(e) => setEditData({ ...editData, role: e.target.value })} className={inputCls}>
+                  <option value="MEMBER">Member</option>
+                  <option value="TRAINER">Trainer</option>
+                  <option value="GYM_OWNER">Gym Owner</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                <input required type="email" value={editData.email} onChange={(e) => setEditData({ ...editData, email: e.target.value })} className={inputCls} />
+                <label className="block text-sm font-medium text-foreground mb-1">Assign Gym</label>
+                <select value={editData.gymId} onChange={(e) => setEditData({ ...editData, gymId: e.target.value })} className={inputCls}>
+                  <option value="">No Gym</option>
+                  {gymOptions.map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password <span className="text-slate-400 font-normal">(leave empty to keep current)</span></label>
-                <input type="password" value={editData.password} onChange={(e) => setEditData({ ...editData, password: e.target.value })} className={inputCls} placeholder="••••••••" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                  <select value={editData.role} onChange={(e) => setEditData({ ...editData, role: e.target.value })} className={inputCls}>
-                    <option value="MEMBER">Member</option>
-                    <option value="TRAINER">Trainer</option>
-                    <option value="GYM_OWNER">Gym Owner</option>
-                    <option value="SUPER_ADMIN">Super Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assign Gym</label>
-                  <select value={editData.gymId} onChange={(e) => setEditData({ ...editData, gymId: e.target.value })} className={inputCls}>
-                    <option value="">No Gym</option>
-                    {gymOptions.map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editData.active}
-                    onChange={(e) => setEditData({ ...editData, active: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Account Active</span>
-                </label>
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Saving..." : "Save Changes"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={editData.active}
+                  onChange={(e) => setEditData({ ...editData, active: e.target.checked })}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-foreground">Account Active</span>
+              </label>
+            </div>
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Saving..." : "Save Changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Confirmation ── */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-700 p-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-7 h-7 text-rose-600 dark:text-rose-400" />
+      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-7 h-7 text-destructive" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Delete User?</h3>
-            <p className="text-sm text-slate-500 mb-6">This action cannot be undone. The user will be permanently removed from the system.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-              <button onClick={() => handleDelete(showDeleteConfirm)} disabled={submitting} className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Deleting..." : "Delete"}</button>
-            </div>
+            <DialogTitle className="text-center">Delete User?</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground mb-6">This action cannot be undone. The user will be permanently removed from the system.</p>
           </div>
-        </div>
-      )}
+          <DialogFooter className="flex gap-3 sm:justify-center">
+            <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)} className="flex-1">Cancel</Button>
+            <Button variant="destructive" onClick={() => handleDelete(showDeleteConfirm as string)} disabled={submitting} className="flex-1">
+              {submitting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

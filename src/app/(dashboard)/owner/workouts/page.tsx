@@ -5,6 +5,8 @@ import { Plus, Dumbbell, UserPlus } from "lucide-react";
 import { DataTable, type Column, SearchFilterBar } from "@/components/shared";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface WorkoutPlan {
     id: string;
@@ -88,12 +90,13 @@ export default function OwnerWorkoutsPage() {
             key: "actions",
             header: "Actions",
             render: (p) => (
-                <button
+                <Button
+                    variant="outline" size="sm"
                     onClick={() => { setSelectedPlanId(p.id); setShowAssignModal(true); }}
-                    className="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
+                    className="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 border-0 flex items-center gap-1.5"
                 >
                     <UserPlus className="w-3.5 h-3.5" /> Assign
-                </button>
+                </Button>
             ),
         },
     ];
@@ -111,13 +114,11 @@ export default function OwnerWorkoutsPage() {
                     <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Workout Plans</h1>
                     <p className="text-sm text-slate-500 font-medium mt-1">Design and assign professional routines to your members.</p>
                 </div>
-                <Link
-                    href="/owner/workouts/create"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
-                >
-                    <Plus className="w-4 h-4" />
-                    Create Plan
-                </Link>
+                <Button asChild size="lg" className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 shadow-lg transition-transform active:scale-95">
+                    <Link href="/owner/workouts/create" className="flex items-center gap-2">
+                        <Plus className="w-4 h-4" /> Create Plan
+                    </Link>
+                </Button>
             </div>
 
             <div className="pt-4 flex flex-col gap-5">
@@ -191,32 +192,31 @@ function AssignModal({ planId, onClose, onSuccess }: { planId: string, onClose: 
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white">Assign Plan</h3>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">&times;</button>
-                </div>
-                <form onSubmit={handleAssign} className="p-8 space-y-5">
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="sm:max-w-md p-0 overflow-hidden border-slate-200 dark:border-slate-800">
+                <DialogHeader className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+                    <DialogTitle className="text-xl font-black text-slate-900 dark:text-white">Assign Plan</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAssign} className="p-8 space-y-5 pt-4">
                     <div>
                         <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
-                        <select required value={userId} onChange={e => setUserId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none">
+                        <select required value={userId} onChange={e => setUserId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none">
                             <option value="">— Select a member —</option>
                             {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Start Date</label>
-                        <input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none" />
+                        <input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none" />
                     </div>
-                    <div className="pt-4 flex gap-4">
-                        <button type="button" onClick={onClose} className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-600">Cancel</button>
-                        <button type="submit" disabled={submitting} className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl disabled:opacity-50 transition-colors">
+                    <DialogFooter className="pt-4 flex gap-4">
+                        <Button type="button" variant="ghost" className="flex-1 py-6 font-bold" onClick={onClose}>Cancel</Button>
+                        <Button type="submit" disabled={submitting} className="flex-[2] py-6 font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white">
                             {submitting ? "Assigning..." : "Assign"}
-                        </button>
-                    </div>
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

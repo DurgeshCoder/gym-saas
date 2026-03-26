@@ -3,7 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { Building2, Plus, Edit2, Dumbbell, MapPin } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 interface Gym {
   id: string;
   name: string;
@@ -213,16 +215,16 @@ export default function SuperAdminGymsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Gym Master Directory</h1>
-          <p className="text-sm text-slate-500 mt-1">Super Admin global view of all onboarded gyms.</p>
+          <h1 className="text-2xl font-extrabold text-foreground">Gym Master Directory</h1>
+          <p className="text-sm text-muted-foreground mt-1">Super Admin global view of all onboarded gyms.</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all"
+          className="shadow-sm items-center gap-2"
         >
           <Building2 className="w-5 h-5" />
           Onboard New Gym
-        </button>
+        </Button>
       </div>
 
       {/* Universal Search + Filters */}
@@ -254,89 +256,71 @@ export default function SuperAdminGymsPage() {
       />
 
       {/* ── Add Gym Modal ── */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-5 h-5" /> Setup New Gym & Owner
-              </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">
-                &times;
-              </button>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" /> Setup New Gym & Owner
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateGym} className="space-y-4 pt-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Gym Name</label>
+              <Input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} placeholder="Titan Fitness Center" />
             </div>
-            <form onSubmit={handleCreateGym} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gym Name</label>
-                <input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="Titan Fitness Center" />
-              </div>
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Owner Account Details</p>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Owner Name</label>
-                    <input required type="text" value={createData.ownerName} onChange={(e) => setCreateData({ ...createData, ownerName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="Sarah Connor" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Owner Email</label>
-                    <input required type="email" value={createData.ownerEmail} onChange={(e) => setCreateData({ ...createData, ownerEmail: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="sarah@titanfitness.com" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
-                    <input required type="text" value={createData.ownerPassword} onChange={(e) => setCreateData({ ...createData, ownerPassword: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="Secure temp password" />
-                  </div>
+            <div className="pt-2 border-t border-border mt-4">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 mt-4">Owner Account Details</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Owner Name</label>
+                  <Input required type="text" value={createData.ownerName} onChange={(e) => setCreateData({ ...createData, ownerName: e.target.value })} placeholder="Sarah Connor" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Owner Email</label>
+                  <Input required type="email" value={createData.ownerEmail} onChange={(e) => setCreateData({ ...createData, ownerEmail: e.target.value })} placeholder="sarah@titanfitness.com" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Initial Password</label>
+                  <Input required type="text" value={createData.ownerPassword} onChange={(e) => setCreateData({ ...createData, ownerPassword: e.target.value })} placeholder="Secure temp password" />
                 </div>
               </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">
-                  Cancel
-                </button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">
-                  {submitting ? "Processing..." : "Create Gym & Owner"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Processing..." : "Create Gym & Owner"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Edit Gym Modal (All Fields) ── */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Edit2 className="w-5 h-5" /> Update Gym Details
-              </h3>
-              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">
-                &times;
-              </button>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit2 className="w-5 h-5" /> Update Gym Details
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditGym} className="space-y-4 pt-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Gym Name</label>
+              <Input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} />
             </div>
-            <form onSubmit={handleEditGym} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gym Name</label>
-                <input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
-                <input type="text" value={editData.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="123 Gym Street" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Logo URL</label>
-                <input type="text" value={editData.logo} onChange={(e) => setEditData({ ...editData, logo: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white" placeholder="https://logo-url.com/logo.png" />
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">
-                  Cancel
-                </button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">
-                  {submitting ? "Updating..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Address</label>
+              <Input type="text" value={editData.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} placeholder="123 Gym Street" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Logo URL</label>
+              <Input type="text" value={editData.logo} onChange={(e) => setEditData({ ...editData, logo: e.target.value })} placeholder="https://logo-url.com/logo.png" />
+            </div>
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Updating..." : "Save Changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

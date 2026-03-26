@@ -2,6 +2,8 @@
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface FilterOption {
   label: string;
@@ -55,13 +57,13 @@ export function SearchFilterBar({
     <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
       {/* Search Input */}
       <div className="relative w-full sm:max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
           type="text"
           value={searchValue}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white placeholder:text-slate-400"
+          className="pl-10 rounded-xl"
         />
       </div>
 
@@ -71,7 +73,7 @@ export function SearchFilterBar({
           <select
             value={dateFilterType}
             onChange={(e) => onDateFilterTypeChange?.(e.target.value as any)}
-            className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white cursor-pointer hover:border-slate-300 dark:hover:border-slate-600"
+            className="px-3 py-2 rounded-md bg-background border border-input text-sm font-medium text-foreground focus:ring-2 focus:ring-ring outline-none hover:bg-accent hover:text-accent-foreground"
           >
             <option value="all">All Time</option>
             <option value="this_month">This Month</option>
@@ -81,18 +83,18 @@ export function SearchFilterBar({
 
         {showDateFilter && dateFilterType === "custom" && (
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="date"
               value={startDate || ""}
               onChange={(e) => onStartDateChange?.(e.target.value)}
-              className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white"
+              className="w-auto rounded-md"
             />
-            <span className="text-slate-400 font-medium">to</span>
-            <input
+            <span className="text-muted-foreground font-medium">to</span>
+            <Input
               type="date"
               value={endDate || ""}
               onChange={(e) => onEndDateChange?.(e.target.value)}
-              className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white"
+              className="w-auto rounded-md"
             />
           </div>
         )}
@@ -102,7 +104,7 @@ export function SearchFilterBar({
             key={filter.key}
             value={filterValues[filter.key] || ""}
             onChange={(e) => onFilterChange?.(filter.key, e.target.value)}
-            className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white cursor-pointer hover:border-slate-300 dark:hover:border-slate-600"
+            className="px-3 py-2 rounded-md bg-background border border-input text-sm font-medium text-foreground focus:ring-2 focus:ring-ring outline-none hover:bg-accent hover:text-accent-foreground"
           >
             <option value="">{filter.label}</option>
             {filter.options.map((opt) => (
@@ -114,13 +116,13 @@ export function SearchFilterBar({
         ))}
 
         {hasActiveFilters && onClearFilters && (
-          <button
-            onClick={onClearFilters}
-            className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors font-medium"
+          <Button
+            variant="destructive" size="sm" onClick={onClearFilters}
+            className="flex items-center gap-1.5"
           >
             <X className="w-4 h-4" />
             Clear
-          </button>
+          </Button>
         )}
       </div>
     </div>

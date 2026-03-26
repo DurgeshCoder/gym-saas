@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface SubRecord {
   id: string;
@@ -88,7 +91,7 @@ export default function OwnerSubscriptionsPage() {
           const pJson = await pRes.json();
           setPlans(pJson.data || []);
         }
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -352,16 +355,16 @@ export default function OwnerSubscriptionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Subscriptions</h1>
-          <p className="text-sm text-slate-500 mt-1">Assign plans to members and manage active subscriptions</p>
+          <h1 className="text-2xl font-extrabold text-foreground">Subscriptions</h1>
+          <p className="text-sm text-muted-foreground mt-1">Assign plans to members and manage active subscriptions</p>
         </div>
-        <button
+        <Button
           onClick={() => { setCreateData(emptyCreate); setError(""); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all"
+          className="shadow-sm items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Assign Subscription
-        </button>
+        </Button>
       </div>
 
       {/* Search + Filters */}
@@ -398,137 +401,135 @@ export default function OwnerSubscriptionsPage() {
       />
 
       {/* ── Assign Subscription Modal ── */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Plus className="w-5 h-5" /> Assign Subscription</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Plus className="w-5 h-5" /> Assign Subscription</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4 pt-4">
+            {error && <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">{error}</p>}
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Select Member</label>
+              <select required value={createData.userId} onChange={(e) => setCreateData({ ...createData, userId: e.target.value })} className={inputCls}>
+                <option value="">— Choose a member —</option>
+                {members.filter((m) => m.id).map((m) => (
+                  <option key={m.id} value={m.id}>{m.name} ({m.email})</option>
+                ))}
+              </select>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
-              {error && <p className="text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-lg">{error}</p>}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Member</label>
-                <select required value={createData.userId} onChange={(e) => setCreateData({ ...createData, userId: e.target.value })} className={inputCls}>
-                  <option value="">— Choose a member —</option>
-                  {members.filter((m) => m.id).map((m) => (
-                    <option key={m.id} value={m.id}>{m.name} ({m.email})</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Select Plan</label>
+              <select required value={createData.planId} onChange={(e) => setCreateData({ ...createData, planId: e.target.value })} className={inputCls}>
+                <option value="">— Choose a plan —</option>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)} / {p.duration} days</option>
+                ))}
+              </select>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Plan</label>
-                <select required value={createData.planId} onChange={(e) => setCreateData({ ...createData, planId: e.target.value })} className={inputCls}>
-                  <option value="">— Choose a plan —</option>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)} / {p.duration} days</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Plan preview card */}
-              {selectedPlan && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-blue-800 dark:text-blue-300">{selectedPlan.name}</p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">{selectedPlan.duration} days duration</p>
-                    </div>
-                    <p className="text-xl font-extrabold text-blue-700 dark:text-blue-300">{formatPrice(selectedPlan.price)}</p>
+            {/* Plan preview card */}
+            {selectedPlan && (
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-primary">{selectedPlan.name}</p>
+                    <p className="text-xs text-primary/80 mt-0.5">{selectedPlan.duration} days duration</p>
                   </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
-                  <input required type="date" value={createData.startDate} onChange={(e) => setCreateData({ ...createData, startDate: e.target.value })} className={inputCls} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
-                  <select value={createData.paymentMethod} onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })} className={inputCls}>
-                    <option value="CASH">Cash</option>
-                    <option value="CARD">Card</option>
-                    <option value="PAYPAL">PayPal / UPI</option>
-                  </select>
+                  <p className="text-xl font-extrabold text-primary">{formatPrice(selectedPlan.price)}</p>
                 </div>
               </div>
+            )}
 
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={createData.autoRenew} onChange={(e) => setCreateData({ ...createData, autoRenew: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Enable Auto-Renewal</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Start Date</label>
+                <Input required type="date" value={createData.startDate} onChange={(e) => setCreateData({ ...createData, startDate: e.target.value })} />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Payment Method</label>
+                <select value={createData.paymentMethod} onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })} className={inputCls}>
+                  <option value="CASH">Cash</option>
+                  <option value="CARD">Card</option>
+                  <option value="PAYPAL">PayPal / UPI</option>
+                </select>
+              </div>
+            </div>
 
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Assigning..." : "Assign Subscription"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={createData.autoRenew} onChange={(e) => setCreateData({ ...createData, autoRenew: e.target.checked })} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+              <span className="text-sm font-medium text-foreground">Enable Auto-Renewal</span>
+            </div>
+
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Assigning..." : "Assign Subscription"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Edit Subscription Modal ── */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Edit2 className="w-5 h-5" /> Edit Subscription</h3>
-              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
-            </div>
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
-              {error && <p className="text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-lg">{error}</p>}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Edit2 className="w-5 h-5" /> Edit Subscription</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4 pt-4">
+            {error && <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">{error}</p>}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Change Plan</label>
-                <select value={editData.planId} onChange={(e) => setEditData({ ...editData, planId: e.target.value })} className={inputCls}>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
-                <input type="date" value={editData.startDate} onChange={(e) => setEditData({ ...editData, startDate: e.target.value })} className={inputCls} />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={editData.autoRenew} onChange={(e) => setEditData({ ...editData, autoRenew: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Auto-Renew</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={editData.active} onChange={(e) => setEditData({ ...editData, active: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
-                </label>
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Saving..." : "Save Changes"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Change Plan</label>
+              <select value={editData.planId} onChange={(e) => setEditData({ ...editData, planId: e.target.value })} className={inputCls}>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Start Date</label>
+              <Input type="date" value={editData.startDate} onChange={(e) => setEditData({ ...editData, startDate: e.target.value })} />
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editData.autoRenew} onChange={(e) => setEditData({ ...editData, autoRenew: e.target.checked })} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+                <span className="text-sm font-medium text-foreground">Auto-Renew</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editData.active} onChange={(e) => setEditData({ ...editData, active: e.target.checked })} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+                <span className="text-sm font-medium text-foreground">Active</span>
+              </label>
+            </div>
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Saving..." : "Save Changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Cancel Confirmation ── */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-700 p-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-7 h-7 text-rose-600 dark:text-rose-400" />
+      <Dialog open={!!showCancelConfirm} onOpenChange={(open) => !open && setShowCancelConfirm(null)}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-7 h-7 text-destructive" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Cancel Subscription?</h3>
-            <p className="text-sm text-slate-500 mb-1"><strong>{showCancelConfirm.user.name}</strong>'s subscription to <strong>{showCancelConfirm.plan.name}</strong> will be cancelled.</p>
-            <p className="text-xs text-slate-400 mb-6">The member will lose access after the end date.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowCancelConfirm(null)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Keep Active</button>
-              <button onClick={handleCancel} disabled={submitting} className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Cancelling..." : "Cancel Subscription"}</button>
-            </div>
+            <DialogTitle className="text-center">Cancel Subscription?</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground mb-1"><strong>{showCancelConfirm?.user.name}</strong>'s subscription to <strong>{showCancelConfirm?.plan.name}</strong> will be cancelled.</p>
+            <p className="text-xs text-muted-foreground mb-6">The member will lose access after the end date.</p>
           </div>
-        </div>
-      )}
+          <DialogFooter className="flex gap-3 sm:justify-center">
+            <Button variant="ghost" onClick={() => setShowCancelConfirm(null)} className="flex-1">Keep Active</Button>
+            <Button variant="destructive" onClick={handleCancel} disabled={submitting} className="flex-1">
+              {submitting ? "Cancelling..." : "Cancel Subscription"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

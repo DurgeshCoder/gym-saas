@@ -47,10 +47,10 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-12 text-center">
-          <div className="inline-flex items-center gap-3 text-slate-500">
-            <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="inline-flex items-center gap-3 text-muted-foreground">
+            <div className="w-5 h-5 border-2 border-muted border-t-primary rounded-full animate-spin" />
             Loading data...
           </div>
         </div>
@@ -60,15 +60,15 @@ export function DataTable<T>({
 
   if (data.length === 0 && totalItems === 0) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-12 text-center">
           {emptyIcon && (
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               {emptyIcon}
             </div>
           )}
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{emptyTitle}</h3>
-          <p className="text-slate-500 mb-6">{emptyDescription}</p>
+          <h3 className="text-lg font-bold mb-1">{emptyTitle}</h3>
+          <p className="text-muted-foreground mb-6">{emptyDescription}</p>
           {emptyAction}
         </div>
       </div>
@@ -76,32 +76,30 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase font-semibold text-xs border-b border-slate-200 dark:border-slate-700">
+          <thead className="bg-muted text-muted-foreground uppercase font-semibold text-xs border-b border-border">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-6 py-4 ${
-                    col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
-                  }`}
+                  className={`px-6 py-4 ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
+                    }`}
                 >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tbody className="divide-y divide-border">
             {data.map((item) => (
-              <tr key={rowKey(item)} className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
+              <tr key={rowKey(item)} className="hover:bg-muted/50 transition-colors">
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={`px-6 py-4 ${
-                      col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
-                    }`}
+                    className={`px-6 py-4 ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
+                      }`}
                   >
                     {col.render(item)}
                   </td>

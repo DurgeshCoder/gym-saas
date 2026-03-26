@@ -12,6 +12,9 @@ import {
   Tag,
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface PlanRecord {
   id: string;
@@ -208,12 +211,12 @@ export default function OwnerPlansPage() {
       header: "Plan Name",
       render: (p) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-400 flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-secondary text-primary flex items-center justify-center shadow-sm">
             <Tag className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-semibold text-slate-900 dark:text-white text-base">{p.name}</p>
-            <p className="text-slate-500 text-xs mt-0.5">Created {new Date(p.createdAt).toLocaleDateString()}</p>
+            <p className="font-semibold text-foreground text-base">{p.name}</p>
+            <p className="text-muted-foreground text-xs mt-0.5">Created {new Date(p.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
       ),
@@ -232,7 +235,7 @@ export default function OwnerPlansPage() {
       key: "duration",
       header: "Duration",
       render: (p) => (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-primary/10 text-primary border-primary/20">
           <Clock className="w-3 h-3" />
           {formatDuration(p.duration)}
         </span>
@@ -254,12 +257,12 @@ export default function OwnerPlansPage() {
       align: "right",
       render: (p) => (
         <div className="flex justify-end gap-1">
-          <button onClick={() => openEdit(p)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button onClick={() => setShowDeleteConfirm(p)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <Button variant="ghost" size="icon" onClick={() => openEdit(p)} title="Edit">
+            <Edit2 className="w-4 h-4 text-muted-foreground hover:text-primary" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setShowDeleteConfirm(p)} title="Delete">
+            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+          </Button>
         </div>
       ),
     },
@@ -282,16 +285,16 @@ export default function OwnerPlansPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Membership Plans</h1>
-          <p className="text-sm text-slate-500 mt-1">Create and manage subscription plans for your gym</p>
+          <h1 className="text-2xl font-extrabold text-foreground">Membership Plans</h1>
+          <p className="text-sm text-muted-foreground mt-1">Create and manage subscription plans for your gym</p>
         </div>
-        <button
+        <Button
           onClick={() => { setCreateData(emptyCreate); setError(""); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all"
+          className="shadow-sm items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Create Plan
-        </button>
+        </Button>
       </div>
 
       {/* Search + Filters */}
@@ -315,9 +318,9 @@ export default function OwnerPlansPage() {
         emptyTitle="No Plans Yet"
         emptyDescription="Create your first membership plan to start accepting subscriptions."
         emptyAction={
-          <button onClick={() => { setCreateData(emptyCreate); setShowAddModal(true); }} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm">
+          <Button onClick={() => { setCreateData(emptyCreate); setShowAddModal(true); }}>
             Create First Plan
-          </button>
+          </Button>
         }
         currentPage={currentPage}
         totalPages={totalPages}
@@ -328,121 +331,117 @@ export default function OwnerPlansPage() {
       />
 
       {/* ── Create Plan Modal ── */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Plus className="w-5 h-5" /> Create New Plan</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Plus className="w-5 h-5" /> Create New Plan</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4 pt-4">
+            {error && <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">{error}</p>}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Plan Name</label>
+              <Input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} placeholder="e.g. Gold Monthly" />
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
-              {error && <p className="text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-lg">{error}</p>}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Plan Name</label>
-                <input required type="text" value={createData.name} onChange={(e) => setCreateData({ ...createData, name: e.target.value })} className={inputCls} placeholder="e.g. Gold Monthly" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Price (₹)</label>
-                <input required type="number" min="1" step="1" value={createData.price} onChange={(e) => setCreateData({ ...createData, price: e.target.value })} className={inputCls} placeholder="e.g. 1999" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (days)</label>
-                <input required type="number" min="1" value={createData.duration} onChange={(e) => setCreateData({ ...createData, duration: e.target.value })} className={inputCls} placeholder="e.g. 30" />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {durationPresets.map((p) => (
-                    <button
-                      type="button"
-                      key={p.value}
-                      onClick={() => setCreateData({ ...createData, duration: p.value })}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
-                        createData.duration === p.value
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600"
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Price (₹)</label>
+              <Input required type="number" min="1" step="1" value={createData.price} onChange={(e) => setCreateData({ ...createData, price: e.target.value })} placeholder="e.g. 1999" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Duration (days)</label>
+              <Input required type="number" min="1" value={createData.duration} onChange={(e) => setCreateData({ ...createData, duration: e.target.value })} placeholder="e.g. 30" />
+              <div className="flex flex-wrap gap-2 mt-2">
+                {durationPresets.map((p) => (
+                  <button
+                    type="button"
+                    key={p.value}
+                    onClick={() => setCreateData({ ...createData, duration: p.value })}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${createData.duration === p.value
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-muted-foreground border-input hover:bg-muted"
                       }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Creating..." : "Create Plan"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create Plan"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Edit Plan Modal ── */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Edit2 className="w-5 h-5" /> Edit Plan</h3>
-              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Edit2 className="w-5 h-5" /> Edit Plan</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4 pt-4">
+            {error && <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">{error}</p>}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Plan Name</label>
+              <Input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} />
             </div>
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
-              {error && <p className="text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-lg">{error}</p>}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Plan Name</label>
-                <input required type="text" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Price (₹)</label>
-                <input required type="number" min="1" step="1" value={editData.price} onChange={(e) => setEditData({ ...editData, price: e.target.value })} className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (days)</label>
-                <input required type="number" min="1" value={editData.duration} onChange={(e) => setEditData({ ...editData, duration: e.target.value })} className={inputCls} />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {durationPresets.map((p) => (
-                    <button
-                      type="button"
-                      key={p.value}
-                      onClick={() => setEditData({ ...editData, duration: p.value })}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
-                        editData.duration === p.value
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600"
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Price (₹)</label>
+              <Input required type="number" min="1" step="1" value={editData.price} onChange={(e) => setEditData({ ...editData, price: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Duration (days)</label>
+              <Input required type="number" min="1" value={editData.duration} onChange={(e) => setEditData({ ...editData, duration: e.target.value })} />
+              <div className="flex flex-wrap gap-2 mt-2">
+                {durationPresets.map((p) => (
+                  <button
+                    type="button"
+                    key={p.value}
+                    onClick={() => setEditData({ ...editData, duration: p.value })}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${editData.duration === p.value
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-muted-foreground border-input hover:bg-muted"
                       }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Saving..." : "Save Changes"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Saving..." : "Save Changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Confirmation ── */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-700 p-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-7 h-7 text-rose-600 dark:text-rose-400" />
+      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-7 h-7 text-destructive" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Delete "{showDeleteConfirm.name}"?</h3>
-            {showDeleteConfirm._count.subscriptions > 0 ? (
+            <DialogTitle className="text-center">Delete "{showDeleteConfirm?.name}"?</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            {showDeleteConfirm?._count.subscriptions && showDeleteConfirm._count.subscriptions > 0 ? (
               <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg mb-4">
                 ⚠ This plan has <strong>{showDeleteConfirm._count.subscriptions}</strong> active subscription(s). Deletion will be blocked if any are still active.
               </p>
             ) : (
-              <p className="text-sm text-slate-500 mb-6">This plan will be permanently removed. This action cannot be undone.</p>
+              <p className="text-sm text-muted-foreground mb-2">This plan will be permanently removed. This action cannot be undone.</p>
             )}
-            <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl">Cancel</button>
-              <button onClick={handleDelete} disabled={submitting} className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl disabled:opacity-50">{submitting ? "Deleting..." : "Delete Plan"}</button>
-            </div>
           </div>
-        </div>
-      )}
+          <DialogFooter className="flex gap-3 sm:justify-center">
+            <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)} className="flex-1">Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={submitting} className="flex-1">
+              {submitting ? "Deleting..." : "Delete Plan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

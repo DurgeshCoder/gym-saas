@@ -9,6 +9,7 @@ import { z } from "zod";
 import { ArrowLeft, Save, Plus, Trash2, Dumbbell } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 
 type FormValues = z.infer<typeof createPlanSchema>;
 
@@ -90,10 +91,10 @@ export default function CreateWorkoutPage() {
                         <p className="text-sm text-slate-500 font-medium mt-1">Design a structured multi-day routine for your members.</p>
                     </div>
                 </div>
-                <button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
-                    <Save className="w-4 h-4" />
+                <Button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting} size="lg" className="rounded-xl shadow-lg shadow-emerald-500/20 font-black bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700">
+                    <Save className="w-4 h-4 mr-2" />
                     {isSubmitting ? "Saving..." : "Save Plan"}
-                </button>
+                </Button>
             </div>
 
             <form className="space-y-8" onSubmit={handleSubmit(onSubmit, onError)}>
@@ -143,9 +144,9 @@ export default function CreateWorkoutPage() {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-black text-slate-900 dark:text-white">Workout Days Structure</h2>
-                        <button type="button" onClick={() => appendDay({ dayNumber: dayFields.length + 1, title: `Day ${dayFields.length + 1}`, exercises: [{ name: "", sets: 3, reps: "10-12", restTime: 60, order: 1 }] })} className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                        <Button type="button" variant="secondary" size="sm" onClick={() => appendDay({ dayNumber: dayFields.length + 1, title: `Day ${dayFields.length + 1}`, exercises: [{ name: "", sets: 3, reps: "10-12", restTime: 60, order: 1 }] })} className="font-bold flex items-center gap-2">
                             <Plus className="w-4 h-4" /> Add Day
-                        </button>
+                        </Button>
                     </div>
 
                     {dayFields.map((dayItem, dayIndex) => (
@@ -194,13 +195,13 @@ function DayComponent({ dayIndex, control, register, removeDay, totalDays }: any
                     </div>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                    <button type="button" onClick={() => appendEx({ name: "", sets: 3, reps: "10-12", restTime: 60, order: exFields.length + 1 })} className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendEx({ name: "", sets: 3, reps: "10-12", restTime: 60, order: exFields.length + 1 })} className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 border-0 flex items-center gap-1.5 transition-colors">
                         <Dumbbell className="w-3.5 h-3.5" /> Add Exercise
-                    </button>
+                    </Button>
                     {totalDays > 1 && (
-                        <button type="button" onClick={removeDay} className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors">
+                        <Button type="button" variant="destructive" size="icon" onClick={removeDay} className="w-9 h-9 border-none shadow-none rounded-lg text-rose-500">
                             <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
@@ -233,9 +234,9 @@ function DayComponent({ dayIndex, control, register, removeDay, totalDays }: any
                             </div>
                         </div>
                         <div className="col-span-12 md:col-span-1 flex justify-end">
-                            <button type="button" onClick={() => removeEx(exIndex)} className="text-slate-400 hover:text-rose-500 transition-colors p-2">
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeEx(exIndex)} className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2">
                                 <Trash2 className="w-4 h-4" />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 ))}

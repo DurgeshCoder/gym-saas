@@ -16,6 +16,20 @@ import {
   ShieldCheck,
   Activity,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -97,71 +111,85 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h1 className="text-xl font-bold flex items-center gap-2 text-blue-600 dark:text-blue-400 truncate">
-            {brandIcon}
-            <span className="truncate">{brandName}</span>
-          </h1>
-          <span className="text-[10px] text-slate-500 mt-1 block uppercase font-bold tracking-widest">
-            {brandSub}
-          </span>
-        </div>
+    <SidebarProvider>
+      <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar className="border-r border-border">
+          <SidebarHeader className="p-6 border-b border-border">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-primary truncate">
+              {brandIcon}
+              <span className="truncate">{brandName}</span>
+            </h1>
+            <span className="text-[10px] text-muted-foreground mt-1 block uppercase font-bold tracking-widest">
+              {brandSub}
+            </span>
+          </SidebarHeader>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {links.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = pathname === link.href;
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                  }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`} />
-                {link.name}
-              </Link>
-            );
-          })}
-        </nav>
+                    return (
+                      <SidebarMenuItem key={link.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={link.name}
+                          className="font-medium h-12"
+                        >
+                          <Link href={link.href} className="flex items-center gap-3">
+                            <Icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                            <span>{link.name}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3 px-4 py-2 mb-4">
-            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold">
-              {session?.user?.name?.charAt(0) || "U"}
+          <SidebarFooter className="p-4 border-t border-border">
+            <div className="flex items-center gap-3 px-2 py-2 mb-2">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {session?.user?.name?.charAt(0) || "U"}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {session?.user?.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                {session?.user?.name}
-              </p>
-              <p className="text-xs text-slate-500 truncate">{session?.user?.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all font-medium"
-          >
-            <LogOut className="w-5 h-5 text-red-500" />
-            Sign Out
-          </button>
-        </div>
-      </aside>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-destructive/10 rounded-xl transition-all font-medium"
+            >
+              <LogOut className="w-5 h-5 text-destructive" />
+              Sign Out
+            </button>
+          </SidebarFooter>
+        </Sidebar>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        <header className="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center px-8 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-            {links.find((l) => l.href === pathname)?.name || "Dashboard Overview"}
-          </h2>
-        </header>
-        <div className="p-8">{children}</div>
-      </main>
-    </div>
+        {/* Main Content Area */}
+        <main className="flex-1 w-full overflow-y-auto min-w-0 bg-background">
+          <header className="h-16 bg-background border-b flex items-center justify-between px-4 sm:px-8 shadow-sm">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <h2 className="text-lg font-semibold hidden sm:flex">
+                {links.find((l) => l.href === pathname)?.name || "Dashboard Overview"}
+              </h2>
+            </div>
+            <ThemeToggle />
+          </header>
+          <div className="p-4 sm:p-8">{children}</div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }

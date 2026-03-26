@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface PaymentRecord {
   id: string;
@@ -261,13 +263,14 @@ export default function OwnerPaymentsPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Payments & Revenue</h1>
           <p className="text-sm text-slate-500 font-medium mt-1">Manage all membership fees and incoming cash flow.</p>
         </div>
-        <button
+        <Button
+          size="lg"
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
+          className="rounded-xl shadow-lg transition-transform active:scale-95 text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 font-bold"
         >
-          <Coins className="w-4 h-4" />
+          <Coins className="w-4 h-4 mr-2" />
           Record Payment
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -348,118 +351,80 @@ export default function OwnerPaymentsPage() {
       </div>
 
       {/* ── Record Payment Modal ── */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-            <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <Coins className="text-white w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Record Payment</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Extend membership status</p>
-                </div>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-slate-200 dark:border-slate-800">
+          <DialogHeader className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Coins className="text-white w-5 h-5" />
               </div>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">&times;</button>
+              <div>
+                <DialogTitle className="text-xl font-black text-slate-900 dark:text-white">Record Payment</DialogTitle>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Extend membership status</p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={handleCreate} className="p-8 space-y-5 pt-4">
+            {error && (
+              <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 text-xs font-bold flex items-center gap-2">
+                <ArrowDownRight className="w-4 h-4" /> {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
+              <select required value={createData.userId} onChange={(e) => setCreateData({ ...createData, userId: e.target.value, subscriptionId: "" })} className={inputCls}>
+                <option value="">— Select a member —</option>
+                {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+              </select>
             </div>
 
-            <form onSubmit={handleCreate} className="p-8 space-y-5">
-              {error && (
-                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 text-xs font-bold flex items-center gap-2 animate-shake">
-                  <ArrowDownRight className="w-4 h-4" /> {error}
+            {createData.userId && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
+                <div className="grid gap-2">
+                  {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
+                    selectedUserFull.subscriptions.map(sub => (
+                      <div key={sub.id} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"}`} onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: sub.plan.price.toString() })}>
+                        <div>
+                          <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">{formatPrice(sub.plan.price)} renewal fee</p>
+                        </div>
+                        {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">No subscription found. Create a subscription first to extend it.</p>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
-                <select
-                  required
-                  value={createData.userId}
-                  onChange={(e) => setCreateData({ ...createData, userId: e.target.value, subscriptionId: "" })}
-                  className={inputCls}
-                >
-                  <option value="">— Select a member —</option>
-                  {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount (₹)</label>
+                <input required type="number" placeholder="0.00" value={createData.amount} onChange={(e) => setCreateData({ ...createData, amount: e.target.value })} className={inputCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Method</label>
+                <select value={createData.paymentMethod} onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })} className={inputCls}>
+                  <option value="CASH">Cash</option>
+                  <option value="CARD">Card</option>
+                  <option value="PAYPAL">UPI / Online</option>
                 </select>
               </div>
+            </div>
 
-              {createData.userId && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
-                  <div className="grid gap-2">
-                    {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
-                      selectedUserFull.subscriptions.map(sub => (
-                        <div
-                          key={sub.id}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id
-                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                            : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
-                            }`}
-                          onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: sub.plan.price.toString() })}
-                        >
-                          <div>
-                            <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
-                            <p className="text-[10px] text-slate-500 font-bold">{formatPrice(sub.plan.price)} renewal fee</p>
-                          </div>
-                          {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">
-                        No subscription found. Create a subscription first to extend it via payment.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount (₹)</label>
-                  <input
-                    required
-                    type="number"
-                    placeholder="0.00"
-                    value={createData.amount}
-                    onChange={(e) => setCreateData({ ...createData, amount: e.target.value })}
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Method</label>
-                  <select
-                    value={createData.paymentMethod}
-                    onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })}
-                    className={inputCls}
-                  >
-                    <option value="CASH">Cash</option>
-                    <option value="CARD">Card</option>
-                    <option value="PAYPAL">UPI / Online</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                >
-                  {submitting ? "Processing..." : <><CheckCircle2 className="w-5 h-5" /> Confirm Payment</>}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-4 flex gap-4">
+              <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1 py-6 font-bold">Cancel</Button>
+              <Button type="submit" disabled={submitting} className="flex-[2] py-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl border-none">
+                {submitting ? "Processing..." : <><CheckCircle2 className="w-5 h-5 mr-2" /> Confirm Payment</>}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

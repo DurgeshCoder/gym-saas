@@ -23,6 +23,8 @@ export async function GET(req: Request) {
     const statusFilter = searchParams.get("status") || "";
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") || "desc";
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     const skip = (page - 1) * limit;
 
@@ -38,6 +40,18 @@ export async function GET(req: Request) {
     }
     if (methodFilter) where.paymentMethod = methodFilter;
     if (statusFilter) where.status = statusFilter;
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.createdAt.lte = end;
+      }
+    }
 
     const [payments, total] = await Promise.all([
       prisma.payment.findMany({

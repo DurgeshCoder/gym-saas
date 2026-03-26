@@ -56,6 +56,9 @@ export default function OwnerPaymentsPage() {
     status: "",
     sortBy: "createdAt",
   });
+  const [dateFilterType, setDateFilterType] = useState<"all" | "this_month" | "custom">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // Modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -74,12 +77,12 @@ export default function OwnerPaymentsPage() {
       try {
         const res = await fetch("/api/users?limit=100"); // Simple user list
         if (res.ok) {
-           const json = await res.json();
-           // For each user we'd need their subs too.
-           // However, to keep it efficient, we fetch subs for the selected user.
-           setUsers(json.data);
+          const json = await res.json();
+          // For each user we'd need their subs too.
+          // However, to keep it efficient, we fetch subs for the selected user.
+          setUsers(json.data);
         }
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -91,7 +94,7 @@ export default function OwnerPaymentsPage() {
         // Update users state with the detail
         setUsers((prev) => prev.map((u) => u.id === id ? { ...u, subscriptions: fullUser.subscriptions } : u));
       }
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -112,6 +115,16 @@ export default function OwnerPaymentsPage() {
       if (filterValues.paymentMethod) params.set("paymentMethod", filterValues.paymentMethod);
       if (filterValues.status) params.set("status", filterValues.status);
 
+      if (dateFilterType === "this_month") {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        params.set("startDate", firstDay.toISOString());
+        params.set("endDate", now.toISOString());
+      } else if (dateFilterType === "custom") {
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+      }
+
       const res = await fetch(`/api/payments?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
@@ -122,10 +135,10 @@ export default function OwnerPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, search, filterValues]);
+  }, [currentPage, pageSize, search, filterValues, dateFilterType, startDate, endDate]);
 
   useEffect(() => {
-     fetchPayments();
+    fetchPayments();
   }, [fetchPayments]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -169,12 +182,12 @@ export default function OwnerPaymentsPage() {
       ],
     },
     {
-       key: "sortBy",
-       label: "Sort By",
-       options: [
-         { label: "Newest first", value: "createdAt" },
-         { label: "Amount (Low to High)", value: "amount" },
-       ]
+      key: "sortBy",
+      label: "Sort By",
+      options: [
+        { label: "Newest first", value: "createdAt" },
+        { label: "Amount (Low to High)", value: "amount" },
+      ]
     }
   ];
 
@@ -220,9 +233,9 @@ export default function OwnerPaymentsPage() {
       ),
     },
     {
-       key: "date",
-       header: "Date",
-       render: (p) => <span className="text-xs text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString()}</span>
+      key: "date",
+      header: "Date",
+      render: (p) => <span className="text-xs text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString()}</span>
     },
     {
       key: "status",
@@ -245,10 +258,10 @@ export default function OwnerPaymentsPage() {
       {/* Header & Stats Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-700">
         <div>
-           <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Payments & Revenue</h1>
-           <p className="text-sm text-slate-500 font-medium mt-1">Manage all membership fees and incoming cash flow.</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Payments & Revenue</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Manage all membership fees and incoming cash flow.</p>
         </div>
-         <button
+        <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
         >
@@ -258,67 +271,79 @@ export default function OwnerPaymentsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         {/* Simple Stats Grid */}
-         <div className="p-6 rounded-2xl bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden group">
-            <TrendingUp className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:scale-110 transition-transform duration-500" />
-            <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest">Total Revenue (Page)</p>
-            <div className="mt-2 flex items-baseline gap-2">
-               <h3 className="text-3xl font-black">{formatPrice(totalRevenue)}</h3>
-               <span className="text-emerald-200 text-xs bg-white/10 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                 <ArrowUpRight className="w-3 h-3" /> 12%
-               </span>
+        {/* Simple Stats Grid */}
+        <div className="p-6 rounded-2xl bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden group">
+          <TrendingUp className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:scale-110 transition-transform duration-500" />
+          <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest">Total Revenue (Page)</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <h3 className="text-3xl font-black">{formatPrice(totalRevenue)}</h3>
+            <span className="text-emerald-200 text-xs bg-white/10 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" /> 12%
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Successful</p>
+            <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-         </div>
+          </div>
+          <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">{totalItems} Payments</h3>
+        </div>
 
-         <div className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
-             <div className="flex items-center justify-between">
-                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Successful</p>
-                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
-                   <CheckCircle2 className="w-4 h-4" />
-                </div>
-             </div>
-             <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">{totalItems} Payments</h3>
-         </div>
-
-         <div className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
-             <div className="flex items-center justify-between">
-                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Avg Transaction</p>
-                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                   <ArrowUpRight className="w-4 h-4" />
-                </div>
-             </div>
-             <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
-               {totalItems > 0 ? formatPrice(totalRevenue / totalItems) : "₹0"}
-             </h3>
-         </div>
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Avg Transaction</p>
+            <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
+          </div>
+          <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
+            {totalItems > 0 ? formatPrice(totalRevenue / totalItems) : "₹0"}
+          </h3>
+        </div>
       </div>
 
       {/* Main Table */}
-      <div className="pt-4">
+      <div className="pt-4 flex flex-col gap-5 ">
         <SearchFilterBar
-            searchPlaceholder="Search by member name or email..."
-            searchValue={search}
-            onSearchChange={setSearch}
-            filters={filters}
-            filterValues={filterValues}
-            onFilterChange={(k, v) => setFilterValues(f => ({ ...f, [k]: v }))}
-            onClearFilters={() => setFilterValues({ paymentMethod: "", status: "", sortBy: "createdAt" })}
+          searchPlaceholder="Search by member name or email..."
+          searchValue={search}
+          onSearchChange={setSearch}
+          filters={filters}
+          filterValues={filterValues}
+          onFilterChange={(k, v) => setFilterValues(f => ({ ...f, [k]: v }))}
+          onClearFilters={() => {
+            setFilterValues({ paymentMethod: "", status: "", sortBy: "createdAt" });
+            setDateFilterType("all");
+            setStartDate("");
+            setEndDate("");
+          }}
+          showDateFilter
+          dateFilterType={dateFilterType}
+          onDateFilterTypeChange={setDateFilterType as any}
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
 
         <DataTable<PaymentRecord>
-            columns={columns}
-            data={payments}
-            loading={loading}
-            rowKey={p => p.id}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
-            emptyIcon={<History className="w-10 h-10 text-slate-300" />}
-            emptyTitle="No transactions yet"
-            emptyDescription="Record a payment to see your revenue history."
+          columns={columns}
+          data={payments}
+          loading={loading}
+          rowKey={p => p.id}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          emptyIcon={<History className="w-10 h-10 text-slate-300" />}
+          emptyTitle="No transactions yet"
+          emptyDescription="Record a payment to see your revenue history."
         />
       </div>
 
@@ -326,113 +351,112 @@ export default function OwnerPaymentsPage() {
       {showAddModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-             <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                      <Coins className="text-white w-5 h-5" />
-                   </div>
-                   <div>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white">Record Payment</h3>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Extend membership status</p>
-                   </div>
+            <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <Coins className="text-white w-5 h-5" />
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">&times;</button>
-             </div>
-
-             <form onSubmit={handleCreate} className="p-8 space-y-5">
-                {error && (
-                  <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 text-xs font-bold flex items-center gap-2 animate-shake">
-                     <ArrowDownRight className="w-4 h-4" /> {error}
-                  </div>
-                )}
-
                 <div>
-                   <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
-                   <select
-                      required
-                      value={createData.userId}
-                      onChange={(e) => setCreateData({ ...createData, userId: e.target.value, subscriptionId: "" })}
-                      className={inputCls}
-                   >
-                     <option value="">— Select a member —</option>
-                     {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
-                   </select>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Record Payment</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Extend membership status</p>
                 </div>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">&times;</button>
+            </div>
 
-                {createData.userId && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
-                    <div className="grid gap-2">
-                       {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
-                         selectedUserFull.subscriptions.map(sub => (
-                           <div
-                             key={sub.id}
-                             className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                               createData.subscriptionId === sub.id
-                                 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                                 : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
-                             }`}
-                             onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: sub.plan.price.toString() })}
-                           >
-                             <div>
-                                <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
-                                <p className="text-[10px] text-slate-500 font-bold">{formatPrice(sub.plan.price)} renewal fee</p>
-                             </div>
-                             {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                           </div>
-                         ))
-                       ) : (
-                         <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">
-                           No subscription found. Create a subscription first to extend it via payment.
-                         </p>
-                       )}
-                    </div>
+            <form onSubmit={handleCreate} className="p-8 space-y-5">
+              {error && (
+                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 text-xs font-bold flex items-center gap-2 animate-shake">
+                  <ArrowDownRight className="w-4 h-4" /> {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
+                <select
+                  required
+                  value={createData.userId}
+                  onChange={(e) => setCreateData({ ...createData, userId: e.target.value, subscriptionId: "" })}
+                  className={inputCls}
+                >
+                  <option value="">— Select a member —</option>
+                  {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+                </select>
+              </div>
+
+              {createData.userId && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
+                  <div className="grid gap-2">
+                    {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
+                      selectedUserFull.subscriptions.map(sub => (
+                        <div
+                          key={sub.id}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                            : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
+                            }`}
+                          onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: sub.plan.price.toString() })}
+                        >
+                          <div>
+                            <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">{formatPrice(sub.plan.price)} renewal fee</p>
+                          </div>
+                          {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">
+                        No subscription found. Create a subscription first to extend it via payment.
+                      </p>
+                    )}
                   </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount (₹)</label>
-                      <input
-                        required
-                        type="number"
-                        placeholder="0.00"
-                        value={createData.amount}
-                        onChange={(e) => setCreateData({ ...createData, amount: e.target.value })}
-                        className={inputCls}
-                      />
-                   </div>
-                   <div>
-                      <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Method</label>
-                      <select
-                        value={createData.paymentMethod}
-                        onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })}
-                        className={inputCls}
-                      >
-                         <option value="CASH">Cash</option>
-                         <option value="CARD">Card</option>
-                         <option value="PAYPAL">UPI / Online</option>
-                      </select>
-                   </div>
                 </div>
+              )}
 
-                <div className="pt-4 flex gap-4">
-                   <button
-                     type="button"
-                     onClick={() => setShowAddModal(false)}
-                     className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                   >
-                     Cancel
-                   </button>
-                   <button
-                      type="submit"
-                      disabled={submitting}
-                      className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                   >
-                     {submitting ? "Processing..." : <><CheckCircle2 className="w-5 h-5"/> Confirm Payment</>}
-                   </button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    placeholder="0.00"
+                    value={createData.amount}
+                    onChange={(e) => setCreateData({ ...createData, amount: e.target.value })}
+                    className={inputCls}
+                  />
                 </div>
-             </form>
+                <div>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Method</label>
+                  <select
+                    value={createData.paymentMethod}
+                    onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })}
+                    className={inputCls}
+                  >
+                    <option value="CASH">Cash</option>
+                    <option value="CARD">Card</option>
+                    <option value="PAYPAL">UPI / Online</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                >
+                  {submitting ? "Processing..." : <><CheckCircle2 className="w-5 h-5" /> Confirm Payment</>}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -22,6 +22,13 @@ interface SearchFilterBarProps {
   filterValues?: Record<string, string>;
   onFilterChange?: (key: string, value: string) => void;
   onClearFilters?: () => void;
+  showDateFilter?: boolean;
+  dateFilterType?: "all" | "this_month" | "custom";
+  onDateFilterTypeChange?: (type: "all" | "this_month" | "custom") => void;
+  startDate?: string;
+  endDate?: string;
+  onStartDateChange?: (date: string) => void;
+  onEndDateChange?: (date: string) => void;
 }
 
 export function SearchFilterBar({
@@ -32,11 +39,20 @@ export function SearchFilterBar({
   filterValues = {},
   onFilterChange,
   onClearFilters,
+  showDateFilter = false,
+  dateFilterType = "all",
+  onDateFilterTypeChange,
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange,
 }: SearchFilterBarProps) {
-  const hasActiveFilters = Object.values(filterValues).some((v) => v !== "" && v !== "all");
+  const hasActiveFilters =
+    Object.values(filterValues).some((v) => v !== "" && v !== "all") ||
+    (showDateFilter && (dateFilterType !== "all" || startDate || endDate));
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+    <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
       {/* Search Input */}
       <div className="relative w-full sm:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -51,6 +67,36 @@ export function SearchFilterBar({
 
       {/* Filter Dropdowns */}
       <div className="flex items-center gap-2 flex-wrap">
+        {showDateFilter && (
+          <select
+            value={dateFilterType}
+            onChange={(e) => onDateFilterTypeChange?.(e.target.value as any)}
+            className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white cursor-pointer hover:border-slate-300 dark:hover:border-slate-600"
+          >
+            <option value="all">All Time</option>
+            <option value="this_month">This Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        )}
+
+        {showDateFilter && dateFilterType === "custom" && (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={startDate || ""}
+              onChange={(e) => onStartDateChange?.(e.target.value)}
+              className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white"
+            />
+            <span className="text-slate-400 font-medium">to</span>
+            <input
+              type="date"
+              value={endDate || ""}
+              onChange={(e) => onEndDateChange?.(e.target.value)}
+              className="px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none text-sm font-medium dark:text-white"
+            />
+          </div>
+        )}
+
         {filters.map((filter) => (
           <select
             key={filter.key}

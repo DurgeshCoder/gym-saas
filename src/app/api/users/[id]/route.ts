@@ -4,6 +4,63 @@ import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const { gymId } = session.user as any;
+    const { id } = await params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        createdAt: true,
+        gymId: true,
+        trainerId: true,
+        trainer: { select: { id: true, name: true, email: true } },
+        subscriptions: {
+          include: {
+            plan: { select: { id: true, name: true, price: true, duration: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            paymentMethod: true,
+            status: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+        attendances: {
+          select: { id: true, date: true },
+          orderBy: { date: "desc" },
+          take: 10,
+        },
+      },
+    });
+
+    if (!user || user.gymId !== gymId) {
+      return NextResponse.json({ message: "User not found in your gym" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error: any) {
+    return NextResponse.json({ message: "Error fetching user" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);

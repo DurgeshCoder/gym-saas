@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell, Eye, Calendar, CreditCard, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 
 interface UserRecord {
@@ -11,6 +11,25 @@ interface UserRecord {
   role: string;
   active: boolean;
   createdAt: string;
+}
+
+interface UserDetail extends UserRecord {
+  trainer?: { name: string; email: string };
+  subscriptions: Array<{
+    id: string;
+    startDate: string;
+    endDate: string;
+    active: boolean;
+    plan: { name: string; price: number };
+  }>;
+  payments: Array<{
+    id: string;
+    amount: number;
+    paymentMethod: string;
+    status: string;
+    createdAt: string;
+  }>;
+  attendances: Array<{ id: string; date: string }>;
 }
 
 export default function OwnerUsersPage() {
@@ -34,6 +53,9 @@ export default function OwnerUsersPage() {
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState<string | null>(null);
+  const [viewUserData, setViewUserData] = useState<UserDetail | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -75,6 +97,27 @@ export default function OwnerUsersPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, filterValues, pageSize]);
+
+  // Fetch single user detail
+  const fetchUserDetail = async (id: string) => {
+    setViewLoading(true);
+    try {
+      const res = await fetch(`/api/users/${id}`);
+      if (res.ok) {
+        setViewUserData(await res.json());
+      }
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showViewModal) {
+      fetchUserDetail(showViewModal);
+    } else {
+      setViewUserData(null);
+    }
+  }, [showViewModal]);
 
   // Create
   const handleCreate = async (e: React.FormEvent) => {
@@ -234,6 +277,9 @@ export default function OwnerUsersPage() {
       align: "right",
       render: (u) => (
         <div className="flex justify-end gap-1">
+          <button onClick={() => setShowViewModal(u.id)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors" title="View Detail">
+            <Eye className="w-4 h-4" />
+          </button>
           <button onClick={() => openEdit(u)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
             <Edit2 className="w-4 h-4" />
           </button>
@@ -246,6 +292,13 @@ export default function OwnerUsersPage() {
       ),
     },
   ];
+
+  const daysRemaining = (endDate: string) => {
+    const diff = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  const isExpired = (endDate: string) => new Date(endDate) < new Date();
 
   const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white";
 
@@ -298,6 +351,134 @@ export default function OwnerUsersPage() {
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
       />
+
+      {/* ── View User Detail Modal ── */}
+      {showViewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Eye className="w-5 h-5 text-emerald-600" /> User Detail</h3>
+              <button onClick={() => setShowViewModal(null)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <div className="p-6 overflow-y-auto space-y-8">
+              {viewLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+                  <div className="w-8 h-8 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" />
+                  <p className="text-sm font-medium">Loading user details...</p>
+                </div>
+              ) : viewUserData ? (
+                <>
+                  {/* Basic Info */}
+                  <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-2xl font-bold shadow-sm">
+                      {viewUserData.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-slate-900 dark:text-white">{viewUserData.name}</h4>
+                      <p className="text-slate-500 font-medium">{viewUserData.email}</p>
+                      <div className="flex gap-2 mt-2">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">{viewUserData.role}</span>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${viewUserData.active ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                          {viewUserData.active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Subscriptions */}
+                  <div className="space-y-4">
+                    <h5 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-blue-600" /> Membership History
+                    </h5>
+                    {viewUserData.subscriptions.length > 0 ? (
+                      <div className="grid gap-3">
+                        {viewUserData.subscriptions.map((sub) => (
+                          <div key={sub.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm flex items-center justify-between">
+                            <div>
+                              <p className="font-bold text-slate-800 dark:text-white">{sub.plan.name}</p>
+                              <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                <Calendar className="w-3 h-3" /> {new Date(sub.startDate).toLocaleDateString()} - {new Date(sub.endDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              {sub.active && !isExpired(sub.endDate) ? (
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg">
+                                    <CheckCircle2 className="w-3 h-3" /> Active
+                                  </span>
+                                  <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                                    {daysRemaining(sub.endDate)} days left
+                                  </p>
+                                </div>
+                              ) : !sub.active ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg">
+                                  <XCircle className="w-3 h-3" /> Cancelled
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg">
+                                  <AlertTriangle className="w-3 h-3" /> Expired
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                        <p className="text-sm text-slate-500 italic">No subscription history found.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Payments */}
+                  <div className="space-y-4">
+                    <h5 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-600" /> Recent Transactions
+                    </h5>
+                    {viewUserData.payments.length > 0 ? (
+                      <div className="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 font-bold">
+                            <tr>
+                              <th className="px-4 py-2">Date</th>
+                              <th className="px-4 py-2">Amount</th>
+                              <th className="px-4 py-2">Method</th>
+                              <th className="px-4 py-2">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            {viewUserData.payments.map((p) => (
+                              <tr key={p.id}>
+                                <td className="px-4 py-2">{new Date(p.createdAt).toLocaleDateString()}</td>
+                                <td className="px-4 py-2 font-bold text-emerald-600">₹{p.amount}</td>
+                                <td className="px-4 py-2 text-slate-500 text-xs">{p.paymentMethod}</td>
+                                <td className="px-4 py-2">
+                                  <span className={`text-[10px] font-bold uppercase ${p.status === 'SUCCESS' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                    {p.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="p-4 text-center text-sm text-slate-500 italic">No payment history.</p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-center text-rose-500 py-8">Failed to load user information.</p>
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
+               <button onClick={() => setShowViewModal(null)} className="px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Create User Modal ── */}
       {showAddModal && (

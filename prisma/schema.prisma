@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// CORE & MULTI-TENANCY
+// -----------------------------------------------------------------------------
+
+model Gym {
+  id        String   @id @default(cuid())
+  name      String
+  logo      String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId   String   @unique
+  owner     User     @relation("GymOwner", fields: [ownerId], references: [id])
+
+  users         User[]         @relation("GymUsers")
+  plans         Plan[]
+  subscriptions Subscription[]
+  payments      Payment[]
+}
+
+// -----------------------------------------------------------------------------
+// USERS & ROLES
+// -----------------------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  GYM_OWNER
+  TRAINER
+  MEMBER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(MEMBER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gymId     String?
+  gym       Gym?     @relation("GymUsers", fields: [gymId], references: [id])
+  ownedGym  Gym?     @relation("GymOwner")
+
+  // For members
+  subscriptions Subscription[]
+  payments      Payment[]
+  bookingsAsMember Booking[] @relation("MemberBookings")
+  attendances      Attendance[]
+
+  // For trainers
+  membersAssigned User[]    @relation("TrainerMembers")
+  trainer         User?     @relation("TrainerMembers", fields: [trainerId], references: [id])
+  trainerId       String?
+  bookingsAsTrainer Booking[] @relation("TrainerBookings")
+}
+
+// -----------------------------------------------------------------------------
+// MEMBERSHIP & SUBSCRIPTION
+// -----------------------------------------------------------------------------
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     Float
+  duration  Int      // Duration in days
+  gymId     String
+  gym       Gym      @relation(fields: [gymId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  planId     String
+  plan       Plan     @relation(fields: [planId], references: [id])
+  gymId      String
+  gym        Gym      @relation(fields: [gymId], references: [id])
+  
+  startDate  DateTime
+  endDate    DateTime
+  autoRenew  Boolean  @default(false)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  payments Payment[]
+}
+
+// -----------------------------------------------------------------------------
+// PAYMENTS
+// -----------------------------------------------------------------------------
+
+enum PaymentMethod {
+  CARD
+  CASH
+  PAYPAL
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id             String         @id @default(cuid())
+  amount         Float
+  paymentMethod  PaymentMethod
+  status         PaymentStatus  @default(PENDING)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  subscriptionId String?
+  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id])
+  gymId          String
+  gym            Gym            @relation(fields: [gymId], references: [id])
+  createdAt      DateTime       @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// TRAINER / ATTENDANCE / BOOKINGS
+// -----------------------------------------------------------------------------
+
+model Booking {
+  id        String   @id @default(cuid())
+  timeSlot  DateTime
+  trainerId String
+  trainer   User     @relation("TrainerBookings", fields: [trainerId], references: [id])
+  memberId  String
+  member    User     @relation("MemberBookings", fields: [memberId], references: [id])
+  status    String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now())
+}

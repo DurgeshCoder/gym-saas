@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
+import { RevenueChart } from "./RevenueChart";
 
 export default async function OwnerDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -18,7 +19,7 @@ export default async function OwnerDashboardPage() {
   const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Safely execute all queries concurrently to maximize speed if gymId exists
-  const [totalMembers, activeSubscriptions, revenueAgg, expiringSoon, recentMembers] = gymId ? await Promise.all([
+  const [totalMembers, activeSubscriptions, revenueAgg, expiringSoon, recentMembers, paymentsLast6Months] = gymId ? await Promise.all([
     prisma.user.count({ where: { gymId, role: "MEMBER" } }),
     prisma.subscription.count({ where: { gymId, active: true, endDate: { gte: now } } }),
     prisma.payment.aggregate({ _sum: { amount: true }, where: { gymId, status: "SUCCESS", createdAt: { gte: startOfMonth } } }),
@@ -34,10 +35,38 @@ export default async function OwnerDashboardPage() {
           take: 1
         }
       }
+    }),
+    prisma.payment.findMany({
+      where: {
+        gymId,
+        status: "SUCCESS",
+        createdAt: { gte: new Date(now.getFullYear(), now.getMonth() - 5, 1) }
+      },
+      select: { amount: true, createdAt: true }
     })
-  ]) : [0, 0, { _sum: { amount: 0 } }, 0, []];
+  ]) : [0, 0, { _sum: { amount: 0 } }, 0, [], []];
 
   const monthlyRevenue = revenueAgg._sum.amount || 0;
+
+  // Process chart data for the last 6 months
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthlyData: Record<string, number> = {};
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthlyData[monthNames[d.getMonth()]] = 0;
+  }
+
+  paymentsLast6Months.forEach(payment => {
+    const month = monthNames[payment.createdAt.getMonth()];
+    if (monthlyData[month] !== undefined) {
+      monthlyData[month] += payment.amount;
+    }
+  });
+
+  const chartData = Object.keys(monthlyData).map(month => ({
+    name: month,
+    revenue: monthlyData[month]
+  }));
 
   const stats = [
     { name: "Total Members", value: totalMembers.toString(), icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
@@ -119,12 +148,9 @@ export default async function OwnerDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col items-center justify-center min-h-[300px]">
-          <CardContent className="flex flex-col items-center justify-center pt-6">
-            <Dumbbell className="w-16 h-16 text-muted mb-4" />
-            <p className="text-muted-foreground font-medium">Revenue Chart (Coming Soon)</p>
-          </CardContent>
-        </Card>
+        <div className="min-h-[300px]">
+          <RevenueChart data={chartData} />
+        </div>
       </div>
     </div>
   );

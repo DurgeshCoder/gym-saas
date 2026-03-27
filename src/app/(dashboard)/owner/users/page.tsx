@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell, Eye, Calendar, CreditCard, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import { DataTable, SearchFilterBar, ConfirmModal, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,7 @@ export default function OwnerUsersPage() {
   const [viewUserData, setViewUserData] = useState<UserDetail | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [confirmRemoveWorkoutId, setConfirmRemoveWorkoutId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Forms
@@ -200,6 +201,24 @@ export default function OwnerUsersPage() {
         alert(err.message);
         toast.error(err.message || "Failed to deactivate user");
       }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRemoveWorkout = async (assignmentId: string) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/workouts/assign/${assignmentId}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Workout plan removed");
+        if (viewUserData) fetchUserDetail(viewUserData.id);
+        setConfirmRemoveWorkoutId(null);
+      } else {
+        throw new Error("Failed");
+      }
+    } catch {
+      toast.error("Failed to remove workout plan");
     } finally {
       setSubmitting(false);
     }
@@ -464,20 +483,7 @@ export default function OwnerUsersPage() {
                             <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${assignment.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : 'text-muted-foreground bg-muted'}`}>
                               {assignment.status}
                             </span>
-                            <button onClick={async () => {
-                              if (!confirm('Are you sure you want to remove this assigned workout?')) return;
-                              try {
-                                const res = await fetch(`/api/workouts/assign/${assignment.id}`, { method: 'DELETE' });
-                                if (res.ok) {
-                                  toast.success('Workout plan removed');
-                                  fetchUserDetail(viewUserData.id);
-                                } else {
-                                  throw new Error('Failed to remove');
-                                }
-                              } catch {
-                                toast.error('Failed to remove workout plan');
-                              }
-                            }} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
+                            <button onClick={() => setConfirmRemoveWorkoutId(assignment.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -621,25 +627,28 @@ export default function OwnerUsersPage() {
       </Dialog>
 
       {/* ── Deactivate Confirmation ── */}
-      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
-        <DialogContent className="sm:max-w-sm text-center">
-          <DialogHeader>
-            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-7 h-7 text-destructive" />
-            </div>
-            <DialogTitle className="text-center">Deactivate User?</DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <p className="text-sm text-muted-foreground mb-2">This user will be deactivated and will no longer have access to the gym.</p>
-          </div>
-          <DialogFooter className="flex gap-3 sm:justify-center">
-            <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)} className="flex-1">Cancel</Button>
-            <Button variant="destructive" onClick={() => handleDeactivate(showDeleteConfirm as string)} disabled={submitting} className="flex-1">
-              {submitting ? "Processing..." : "Deactivate"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmModal
+        open={!!showDeleteConfirm}
+        onOpenChange={(open) => !open && setShowDeleteConfirm(null)}
+        title="Deactivate User?"
+        description="This user will be deactivated and will no longer have access to the gym."
+        confirmText="Deactivate"
+        icon={<Trash2 className="w-7 h-7 text-destructive" />}
+        onConfirm={() => handleDeactivate(showDeleteConfirm as string)}
+        isLoading={submitting}
+      />
+
+      {/* ── Remove Workout Confirmation ── */}
+      <ConfirmModal
+        open={!!confirmRemoveWorkoutId}
+        onOpenChange={(open) => !open && setConfirmRemoveWorkoutId(null)}
+        title="Remove Workout Plan"
+        description="Are you sure you want to remove this assigned workout? The user will no longer see this plan."
+        confirmText="Remove"
+        icon={<Trash2 className="w-7 h-7 text-destructive" />}
+        onConfirm={() => handleRemoveWorkout(confirmRemoveWorkoutId as string)}
+        isLoading={submitting}
+      />
     </div>
   );
 }

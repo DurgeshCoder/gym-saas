@@ -35,6 +35,14 @@ interface UserDetail extends UserRecord {
     createdAt: string;
   }>;
   attendances: Array<{ id: string; date: string }>;
+  assignedWorkoutPlans: Array<{
+    id: string;
+    startDate: string;
+    endDate: string | null;
+    status: string;
+    progress: number;
+    workoutPlan: { id: string; name: string };
+  }>;
 }
 
 export default function OwnerUsersPage() {
@@ -433,6 +441,52 @@ export default function OwnerUsersPage() {
                   ) : (
                     <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
                       <p className="text-sm text-muted-foreground italic">No subscription history found.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Workout Plans */}
+                <div className="space-y-4">
+                  <h5 className="font-bold text-foreground flex items-center gap-2">
+                    <Dumbbell className="w-4 h-4 text-emerald-600" /> Assigned Workout Plans
+                  </h5>
+                  {viewUserData.assignedWorkoutPlans && viewUserData.assignedWorkoutPlans.length > 0 ? (
+                    <div className="grid gap-3">
+                      {viewUserData.assignedWorkoutPlans.map((assignment) => (
+                        <div key={assignment.id} className="p-4 rounded-xl border border-border bg-background shadow-sm flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-foreground">{assignment.workoutPlan.name}</p>
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" /> Started: {new Date(assignment.startDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right flex items-center gap-4">
+                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${assignment.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : 'text-muted-foreground bg-muted'}`}>
+                              {assignment.status}
+                            </span>
+                            <button onClick={async () => {
+                              if (!confirm('Are you sure you want to remove this assigned workout?')) return;
+                              try {
+                                const res = await fetch(`/api/workouts/assign/${assignment.id}`, { method: 'DELETE' });
+                                if (res.ok) {
+                                  toast.success('Workout plan removed');
+                                  fetchUserDetail(viewUserData.id);
+                                } else {
+                                  throw new Error('Failed to remove');
+                                }
+                              } catch {
+                                toast.error('Failed to remove workout plan');
+                              }
+                            }} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
+                      <p className="text-sm text-muted-foreground italic">No assigned workout plans found.</p>
                     </div>
                   )}
                 </div>

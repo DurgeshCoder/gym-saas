@@ -93,13 +93,21 @@ export default function OwnerWorkoutsPage() {
             key: "actions",
             header: "Actions",
             render: (p) => (
-                <Button
-                    variant="outline" size="sm"
-                    onClick={() => { setSelectedPlanId(p.id); setShowAssignModal(true); }}
-                    className="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 border-0 flex items-center gap-1.5"
-                >
-                    <UserPlus className="w-3.5 h-3.5" /> Assign
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline" size="sm"
+                        onClick={() => { setSelectedPlanId(p.id); setShowAssignModal(true); }}
+                        className="text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 border-0 flex items-center gap-1.5"
+                    >
+                        <UserPlus className="w-3.5 h-3.5" /> Assign
+                    </Button>
+                    <Link
+                        href={`/owner/workouts/${p.id}/edit`}
+                        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 border-0 flex items-center gap-1.5")}
+                    >
+                        <Plus className="w-3.5 h-3.5 rotate-45" /> Edit
+                    </Link>
+                </div>
             ),
         },
     ];

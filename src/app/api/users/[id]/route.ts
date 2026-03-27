@@ -48,6 +48,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           orderBy: { date: "desc" },
           take: 10,
         },
+        assignedWorkoutPlans: {
+          include: { workoutPlan: { select: { id: true, name: true } } },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

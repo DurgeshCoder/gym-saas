@@ -39,7 +39,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
               cursor={{ fill: 'rgba(0,0,0,0.05)' }} 
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
               itemStyle={{ color: '#8b5cf6', fontWeight: 600 }}
-              formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']}
+              formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, 'Revenue']}
             />
             <Bar dataKey="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={40} />
           </BarChart>

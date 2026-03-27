@@ -88,3 +88,17 @@ export async function getMemberPayments(userId: string) {
 }
 
 export type MemberPaymentsData = Awaited<ReturnType<typeof getMemberPayments>>;
+
+export async function getAllMemberSubscriptions(userId: string) {
+  return await prisma.subscription.findMany({
+    where: { userId },
+    include: {
+      plan: true,
+      payments: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}

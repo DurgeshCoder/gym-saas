@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getMemberPayments } from "@/lib/queries/member";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, CheckCircle2, Clock, XCircle, CreditCard } from "lucide-react";
+import { Receipt, CheckCircle2, Clock, XCircle, CreditCard, Download } from "lucide-react";
 
 export const metadata = {
   title: "My Payments | Gym SaaS",
@@ -83,8 +83,19 @@ export default async function PaymentsPage() {
                     </div>
                   </div>
                   <div className="bg-muted/30 px-5 py-3 border-t flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="uppercase tracking-wide font-semibold text-foreground/60">Method: {payment.paymentMethod}</span>
-                    <span className="font-mono bg-muted/50 px-2 py-1 rounded truncate max-w-[200px]">ID: {payment.id}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="uppercase tracking-wide font-semibold text-foreground/60">Method: {payment.paymentMethod}</span>
+                      <span className="font-mono bg-muted/50 px-2 py-1 rounded hidden sm:inline-block max-w-[150px] truncate">ID: {payment.id}</span>
+                    </div>
+                    {payment.status === "SUCCESS" && (
+                      <a 
+                        href={`/api/payments/${payment.id}/receipt`}
+                        target="_blank"
+                        className="flex items-center gap-1.5 text-primary hover:underline font-medium"
+                      >
+                        <Download className="w-4 h-4" /> Download Receipt
+                      </a>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -200,12 +200,9 @@ export default function SuperAdminGymsPage() {
       header: "Actions",
       align: "right",
       render: (gym) => (
-        <button
-          onClick={() => openEditModal(gym)}
-          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-        >
-          <Edit2 className="w-4 h-4" />
-        </button>
+        <Button variant="ghost" size="icon" onClick={() => openEditModal(gym)} title="Edit">
+          <Edit2 className="w-4 h-4 text-muted-foreground hover:text-primary" />
+        </Button>
       ),
     },
   ];

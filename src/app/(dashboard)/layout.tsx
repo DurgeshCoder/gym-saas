@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Activity,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sidebar,
@@ -136,16 +137,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     return (
                       <SidebarMenuItem key={link.href}>
                         <SidebarMenuButton
-                          asChild
                           isActive={isActive}
                           tooltip={link.name}
                           className="font-medium h-12"
-                        >
-                          <Link href={link.href} className="flex items-center gap-3">
-                            <Icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                            <span>{link.name}</span>
-                          </Link>
-                        </SidebarMenuButton>
+                          render={
+                            <Link href={link.href} className="flex items-center gap-3">
+                              <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                              <span>{link.name}</span>
+                            </Link>
+                          }
+                        />
                       </SidebarMenuItem>
                     );
                   })}

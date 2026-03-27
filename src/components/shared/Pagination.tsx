@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PaginationProps {
   currentPage: number;
@@ -52,17 +53,21 @@ export function Pagination({
           <span className="font-semibold text-foreground">{totalItems}</span>
         </p>
         {onPageSizeChange && (
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="px-2 py-1.5 rounded-lg bg-background border border-input text-sm text-foreground outline-none cursor-pointer focus:ring-2 focus:ring-ring"
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(val) => onPageSizeChange(Number(val))}
           >
-            {pageSizeOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt} / page
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-auto h-8 text-xs px-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map((opt) => (
+                <SelectItem key={opt} value={opt.toString()}>
+                  {opt} / page
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 

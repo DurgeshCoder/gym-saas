@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SubRecord {
   id: string;
@@ -348,7 +349,7 @@ export default function OwnerSubscriptionsPage() {
     },
   ];
 
-  const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white";
+
 
   return (
     <div className="space-y-6">
@@ -411,22 +412,30 @@ export default function OwnerSubscriptionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Select Member</label>
-              <select required value={createData.userId} onChange={(e) => setCreateData({ ...createData, userId: e.target.value })} className={inputCls}>
-                <option value="">— Choose a member —</option>
-                {members.filter((m) => m.id).map((m) => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.email})</option>
-                ))}
-              </select>
+              <Select required value={createData.userId} onValueChange={(val) => setCreateData({ ...createData, userId: val || "" })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="— Choose a member —" />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.filter((m) => m.id).map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.name} ({m.email})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Select Plan</label>
-              <select required value={createData.planId} onChange={(e) => setCreateData({ ...createData, planId: e.target.value })} className={inputCls}>
-                <option value="">— Choose a plan —</option>
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)} / {p.duration} days</option>
-                ))}
-              </select>
+              <Select required value={createData.planId} onValueChange={(val) => setCreateData({ ...createData, planId: val || "" })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="— Choose a plan —" />
+                </SelectTrigger>
+                <SelectContent>
+                  {plans.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)} / {p.duration} days</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Plan preview card */}
@@ -449,11 +458,16 @@ export default function OwnerSubscriptionsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Payment Method</label>
-                <select value={createData.paymentMethod} onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })} className={inputCls}>
-                  <option value="CASH">Cash</option>
-                  <option value="CARD">Card</option>
-                  <option value="PAYPAL">PayPal / UPI</option>
-                </select>
+                <Select value={createData.paymentMethod} onValueChange={(val) => setCreateData({ ...createData, paymentMethod: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Cash" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="CARD">Card</SelectItem>
+                    <SelectItem value="PAYPAL">PayPal / UPI</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -481,11 +495,16 @@ export default function OwnerSubscriptionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Change Plan</label>
-              <select value={editData.planId} onChange={(e) => setEditData({ ...editData, planId: e.target.value })} className={inputCls}>
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)}</option>
-                ))}
-              </select>
+              <Select value={editData.planId} onValueChange={(val) => setEditData({ ...editData, planId: val || "" })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Change Plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {plans.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name} — {formatPrice(p.price)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Start Date</label>

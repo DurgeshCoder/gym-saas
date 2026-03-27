@@ -17,6 +17,7 @@ import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserRecord {
   id: string;
@@ -61,8 +62,8 @@ export default function SuperAdminUsersPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Form state
-  const emptyCreate = { name: "", email: "", password: "", role: "MEMBER", gymId: "" };
-  const emptyEdit = { id: "", name: "", email: "", password: "", role: "MEMBER", active: true, gymId: "" };
+  const emptyCreate = { name: "", email: "", password: "", role: "MEMBER", gymId: "no_gym" };
+  const emptyEdit = { id: "", name: "", email: "", password: "", role: "MEMBER", active: true, gymId: "no_gym" };
   const [createData, setCreateData] = useState(emptyCreate);
   const [editData, setEditData] = useState(emptyEdit);
 
@@ -118,10 +119,11 @@ export default function SuperAdminUsersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const requestData = { ...createData, gymId: createData.gymId === "no_gym" ? null : createData.gymId };
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(createData),
+        body: JSON.stringify(requestData),
       });
       if (res.ok) {
         setShowAddModal(false);
@@ -145,7 +147,7 @@ export default function SuperAdminUsersPage() {
       password: "",
       role: u.role,
       active: u.active,
-      gymId: u.gymId || "",
+      gymId: u.gymId || "no_gym",
     });
     setShowEditModal(true);
   };
@@ -154,10 +156,11 @@ export default function SuperAdminUsersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const requestData = { ...editData, gymId: editData.gymId === "no_gym" ? null : editData.gymId };
       const res = await fetch(`/api/admin/users/${editData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editData),
+        body: JSON.stringify(requestData),
       });
       if (res.ok) {
         setShowEditModal(false);
@@ -291,8 +294,8 @@ export default function SuperAdminUsersPage() {
       render: (u) => (
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${u.active
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
-              : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
+            : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
             }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${u.active ? "bg-emerald-500" : "bg-rose-500"}`} />
@@ -311,19 +314,18 @@ export default function SuperAdminUsersPage() {
       align: "right",
       render: (u) => (
         <div className="flex justify-end gap-1">
-          <button onClick={() => openEdit(u)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button onClick={() => setShowDeleteConfirm(u.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <Button variant="ghost" size="icon" onClick={() => openEdit(u)} title="Edit">
+            <Edit2 className="w-4 h-4 text-muted-foreground hover:text-primary" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setShowDeleteConfirm(u.id)} title="Delete">
+            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+          </Button>
         </div>
       ),
     },
   ];
 
-  // Shared input classes
-  const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white";
+
 
   return (
     <div className="space-y-6">
@@ -394,21 +396,31 @@ export default function SuperAdminUsersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Role</label>
-                <select value={createData.role} onChange={(e) => setCreateData({ ...createData, role: e.target.value })} className={inputCls}>
-                  <option value="MEMBER">Member</option>
-                  <option value="TRAINER">Trainer</option>
-                  <option value="GYM_OWNER">Gym Owner</option>
-                  <option value="SUPER_ADMIN">Super Admin</option>
-                </select>
+                <Select value={createData.role} onValueChange={(val) => setCreateData({ ...createData, role: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MEMBER">Member</SelectItem>
+                    <SelectItem value="TRAINER">Trainer</SelectItem>
+                    <SelectItem value="GYM_OWNER">Gym Owner</SelectItem>
+                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Assign Gym</label>
-                <select value={createData.gymId} onChange={(e) => setCreateData({ ...createData, gymId: e.target.value })} className={inputCls}>
-                  <option value="">No Gym</option>
-                  {gymOptions.map((g) => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </select>
+                <Select value={createData.gymId} onValueChange={(val) => setCreateData({ ...createData, gymId: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="No Gym" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no_gym">No Gym</SelectItem>
+                    {gymOptions.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter className="pt-4 flex gap-3">
@@ -443,21 +455,31 @@ export default function SuperAdminUsersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Role</label>
-                <select value={editData.role} onChange={(e) => setEditData({ ...editData, role: e.target.value })} className={inputCls}>
-                  <option value="MEMBER">Member</option>
-                  <option value="TRAINER">Trainer</option>
-                  <option value="GYM_OWNER">Gym Owner</option>
-                  <option value="SUPER_ADMIN">Super Admin</option>
-                </select>
+                <Select value={editData.role} onValueChange={(val) => setEditData({ ...editData, role: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MEMBER">Member</SelectItem>
+                    <SelectItem value="TRAINER">Trainer</SelectItem>
+                    <SelectItem value="GYM_OWNER">Gym Owner</SelectItem>
+                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Assign Gym</label>
-                <select value={editData.gymId} onChange={(e) => setEditData({ ...editData, gymId: e.target.value })} className={inputCls}>
-                  <option value="">No Gym</option>
-                  {gymOptions.map((g) => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </select>
+                <Select value={editData.gymId} onValueChange={(val) => setEditData({ ...editData, gymId: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="No Gym" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no_gym">No Gym</SelectItem>
+                    {gymOptions.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex items-center gap-3 pt-2">

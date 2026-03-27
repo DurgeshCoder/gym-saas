@@ -38,12 +38,14 @@ export async function POST(req: Request) {
                     create: data.days.map((day) => ({
                         dayNumber: day.dayNumber,
                         title: day.title,
+                        notes: day.notes,
                         exercises: {
                             create: day.exercises.map(ex => ({
                                 name: ex.name,
                                 sets: ex.sets,
                                 reps: ex.reps,
                                 restTime: ex.restTime,
+                                notes: ex.notes,
                                 order: ex.order
                             }))
                         }

@@ -18,6 +18,8 @@ import {
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface PaymentRecord {
@@ -250,7 +252,7 @@ export default function OwnerPaymentsPage() {
     },
   ];
 
-  const inputCls = "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white";
+
 
   // Selected user for dropdown preview
   const selectedUserFull = users.find(u => u.id === createData.userId);
@@ -373,11 +375,19 @@ export default function OwnerPaymentsPage() {
             )}
 
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
-              <select required value={createData.userId} onChange={(e) => setCreateData({ ...createData, userId: e.target.value, subscriptionId: "" })} className={inputCls}>
-                <option value="">— Select a member —</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
-              </select>
+              <label className="block text-sm font-medium text-foreground mb-1">Member</label>
+              <Select required value={createData.userId} onValueChange={(val) => setCreateData({ ...createData, userId: val || "", subscriptionId: "" })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="— Select a member —" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} ({u.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {createData.userId && (
@@ -403,16 +413,21 @@ export default function OwnerPaymentsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount (₹)</label>
-                <input required type="number" placeholder="0.00" value={createData.amount} onChange={(e) => setCreateData({ ...createData, amount: e.target.value })} className={inputCls} />
+                <label className="block text-sm font-medium text-foreground mb-1">Amount (₹)</label>
+                <Input required type="number" placeholder="0.00" value={createData.amount} onChange={(e) => setCreateData({ ...createData, amount: e.target.value })} />
               </div>
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Method</label>
-                <select value={createData.paymentMethod} onChange={(e) => setCreateData({ ...createData, paymentMethod: e.target.value })} className={inputCls}>
-                  <option value="CASH">Cash</option>
-                  <option value="CARD">Card</option>
-                  <option value="PAYPAL">UPI / Online</option>
-                </select>
+                <label className="block text-sm font-medium text-foreground mb-1">Method</label>
+                <Select value={createData.paymentMethod} onValueChange={(val) => setCreateData({ ...createData, paymentMethod: val || "" })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Cash" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="CARD">Card</SelectItem>
+                    <SelectItem value="PAYPAL">UPI / Online</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

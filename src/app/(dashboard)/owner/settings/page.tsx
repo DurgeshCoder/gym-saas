@@ -16,6 +16,7 @@ import {
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GymSettings {
@@ -166,7 +167,7 @@ export default function OwnerSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-6">
                   <div>
                     <label className={labelCls}>Gym Name</label>
                     <Input
@@ -199,10 +200,10 @@ export default function OwnerSettingsPage() {
 
                 <div>
                   <label className={labelCls}>Official Description</label>
-                  <textarea
+                  <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                    className="min-h-[120px] resize-none"
                     placeholder="Describe what makes your gym special..."
                   />
                 </div>

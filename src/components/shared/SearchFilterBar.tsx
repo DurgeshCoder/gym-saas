@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface FilterOption {
   label: string;
@@ -70,15 +71,19 @@ export function SearchFilterBar({
       {/* Filter Dropdowns */}
       <div className="flex items-center gap-2 flex-wrap">
         {showDateFilter && (
-          <select
+          <Select
             value={dateFilterType}
-            onChange={(e) => onDateFilterTypeChange?.(e.target.value as any)}
-            className="px-3 py-2 rounded-md bg-background border border-input text-sm font-medium text-foreground focus:ring-2 focus:ring-ring outline-none hover:bg-accent hover:text-accent-foreground"
+            onValueChange={(val) => onDateFilterTypeChange?.(val as any)}
           >
-            <option value="all">All Time</option>
-            <option value="this_month">This Month</option>
-            <option value="custom">Custom Range</option>
-          </select>
+            <SelectTrigger className="w-auto h-9">
+              <SelectValue placeholder="All Time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="this_month">This Month</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
+            </SelectContent>
+          </Select>
         )}
 
         {showDateFilter && dateFilterType === "custom" && (
@@ -100,19 +105,23 @@ export function SearchFilterBar({
         )}
 
         {filters.map((filter) => (
-          <select
+          <Select
             key={filter.key}
-            value={filterValues[filter.key] || ""}
-            onChange={(e) => onFilterChange?.(filter.key, e.target.value)}
-            className="px-3 py-2 rounded-md bg-background border border-input text-sm font-medium text-foreground focus:ring-2 focus:ring-ring outline-none hover:bg-accent hover:text-accent-foreground"
+            value={filterValues[filter.key] || "all"}
+            onValueChange={(val) => onFilterChange?.(filter.key, (val === "all" || val === null) ? "" : val)}
           >
-            <option value="">{filter.label}</option>
-            {filter.options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-auto h-9">
+              <SelectValue placeholder={filter.label} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{filter.label}</SelectItem>
+              {filter.options.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         ))}
 
         {hasActiveFilters && onClearFilters && (

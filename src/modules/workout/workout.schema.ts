@@ -9,11 +9,13 @@ export const createPlanSchema = z.object({
     days: z.array(z.object({
         dayNumber: z.number().int(),
         title: z.string().optional(),
+        notes: z.string().optional(),
         exercises: z.array(z.object({
             name: z.string(),
             sets: z.number().int().min(1),
             reps: z.string(),
             restTime: z.number().int(),
+            notes: z.string().optional(),
             order: z.number().int(),
         }))
     }))

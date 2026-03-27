@@ -5,8 +5,11 @@ import { Plus, Dumbbell, UserPlus } from "lucide-react";
 import { DataTable, type Column, SearchFilterBar } from "@/components/shared";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface WorkoutPlan {
     id: string;
@@ -114,11 +117,12 @@ export default function OwnerWorkoutsPage() {
                     <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Workout Plans</h1>
                     <p className="text-sm text-slate-500 font-medium mt-1">Design and assign professional routines to your members.</p>
                 </div>
-                <Button asChild size="lg" className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 shadow-lg transition-transform active:scale-95">
-                    <Link href="/owner/workouts/create" className="flex items-center gap-2">
-                        <Plus className="w-4 h-4" /> Create Plan
-                    </Link>
-                </Button>
+                <Link
+                    href="/owner/workouts/create"
+                    className={cn(buttonVariants({ size: "lg" }), "rounded-xl font-bold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 shadow-lg transition-transform active:scale-95 flex items-center gap-2")}
+                >
+                    <Plus className="w-4 h-4" /> Create Plan
+                </Link>
             </div>
 
             <div className="pt-4 flex flex-col gap-5">
@@ -199,15 +203,23 @@ function AssignModal({ planId, onClose, onSuccess }: { planId: string, onClose: 
                 </DialogHeader>
                 <form onSubmit={handleAssign} className="p-8 space-y-5 pt-4">
                     <div>
-                        <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Member</label>
-                        <select required value={userId} onChange={e => setUserId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none">
-                            <option value="">— Select a member —</option>
-                            {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
-                        </select>
+                        <label className="block text-sm font-medium text-foreground mb-1">Member</label>
+                        <Select required value={userId} onValueChange={(val) => setUserId(val || "")}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="— Select a member —" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {users.map(u => (
+                                    <SelectItem key={u.id} value={u.id}>
+                                        {u.name} ({u.email})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
-                        <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Start Date</label>
-                        <input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none" />
+                        <label className="block text-sm font-medium text-foreground mb-1">Start Date</label>
+                        <Input required type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
                     </div>
                     <DialogFooter className="pt-4 flex gap-4">
                         <Button type="button" variant="ghost" className="flex-1 py-6 font-bold" onClick={onClose}>Cancel</Button>

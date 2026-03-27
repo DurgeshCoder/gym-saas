@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   Settings,
   Image as ImageIcon,
@@ -46,6 +47,7 @@ const defaultHours = DAYS.reduce((acc, day) => ({
 const defaultSocials = { instagram: "", facebook: "", twitter: "", youtube: "" };
 
 export default function OwnerSettingsPage() {
+  const { update } = useSession();
   const [formData, setFormData] = useState<GymSettings>({
     name: "",
     logo: "",
@@ -100,9 +102,11 @@ export default function OwnerSettingsPage() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
+        const body = await res.json();
         toast.success("Gym profile updated successfully!");
         await fetchSettings();
-        setTimeout(() => window.location.reload(), 800);
+        await update({ gymId: body.gym.id });
+        setTimeout(() => window.location.reload(), 500);
       } else {
         const err = await res.json();
         toast.error(err.message || "Failed to update profile.");

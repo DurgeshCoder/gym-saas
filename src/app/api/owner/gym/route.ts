@@ -79,6 +79,12 @@ export async function PUT(req: Request) {
       },
     });
 
+    // Make sure the User model knows it now has a gym
+    await prisma.user.update({
+      where: { id: ownerId },
+      data: { gymId: updated.id }
+    });
+
     return NextResponse.json({ message: "Gym updated successfully", gym: updated });
   } catch (error: any) {
     console.error("Update gym error:", error);

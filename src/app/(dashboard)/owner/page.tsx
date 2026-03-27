@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function OwnerDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -12,14 +13,37 @@ export default async function OwnerDashboardPage() {
 
   const gymId = (session.user as any).gymId;
 
-  // Placeholder query values for now. 
-  // Normally you'd aggregate: e.g. await prisma.user.count({ where: { gymId, role: "MEMBER" } })
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // Safely execute all queries concurrently to maximize speed if gymId exists
+  const [totalMembers, activeSubscriptions, revenueAgg, expiringSoon, recentMembers] = gymId ? await Promise.all([
+    prisma.user.count({ where: { gymId, role: "MEMBER" } }),
+    prisma.subscription.count({ where: { gymId, active: true, endDate: { gte: now } } }),
+    prisma.payment.aggregate({ _sum: { amount: true }, where: { gymId, status: "SUCCESS", createdAt: { gte: startOfMonth } } }),
+    prisma.subscription.count({ where: { gymId, active: true, endDate: { gte: now, lte: nextWeek } } }),
+    prisma.user.findMany({
+      where: { gymId, role: "MEMBER" },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        subscriptions: {
+          where: { active: true, endDate: { gte: now } },
+          include: { plan: true },
+          take: 1
+        }
+      }
+    })
+  ]) : [0, 0, { _sum: { amount: 0 } }, 0, []];
+
+  const monthlyRevenue = revenueAgg._sum.amount || 0;
 
   const stats = [
-    { name: "Total Members", value: "24", icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
-    { name: "Active Subscriptions", value: "18", icon: Dumbbell, color: "text-emerald-600", bg: "bg-emerald-100" },
-    { name: "Monthly Revenue", value: "₹4,290", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100" },
-    { name: "Expiring Soon", value: "3", icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-100" },
+    { name: "Total Members", value: totalMembers.toString(), icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
+    { name: "Active Subscriptions", value: activeSubscriptions.toString(), icon: Dumbbell, color: "text-emerald-600", bg: "bg-emerald-100" },
+    { name: "Monthly Revenue", value: `₹${monthlyRevenue.toLocaleString()}`, icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100" },
+    { name: "Expiring Soon", value: expiringSoon.toString(), icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-100" },
   ];
 
   return (
@@ -31,9 +55,9 @@ export default async function OwnerDashboardPage() {
               <h3 className="font-bold text-yellow-900 dark:text-yellow-400">You haven't set up a Gym yet!</h3>
               <p className="text-sm text-yellow-800 dark:text-yellow-500">Please create your gym profile to unlock full features.</p>
             </div>
-            <Button>
+            <Link href="/owner/settings" className={buttonVariants({ variant: "default" })}>
               Create Gym Now
-            </Button>
+            </Link>
           </CardContent>
         </Card>
       )}
@@ -61,18 +85,37 @@ export default async function OwnerDashboardPage() {
             <CardTitle>Recent Members</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-4 p-3 hover:bg-muted rounded-lg transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-full bg-secondary border-2 border-background shadow-sm" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground">Member Name {i}</p>
-                  <p className="text-xs text-muted-foreground">Joined 2 days ago</p>
+            {recentMembers.length > 0 ? recentMembers.map((member: any) => {
+              const activeSub = member.subscriptions?.[0];
+              const daysAgo = Math.floor((now.getTime() - new Date(member.createdAt).getTime()) / (1000 * 3600 * 24));
+              
+              return (
+                <div key={member.id} className="flex items-center gap-4 p-3 hover:bg-muted rounded-lg transition-colors cursor-pointer">
+                  <div className="w-10 h-10 rounded-full bg-secondary border-2 border-background shadow-sm flex items-center justify-center font-bold text-muted-foreground uppercase">
+                    {member.name.substring(0, 2)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">{member.name}</p>
+                    <p className="text-xs text-muted-foreground">Joined {daysAgo === 0 ? "today" : `${daysAgo} days ago`}</p>
+                  </div>
+                  {activeSub ? (
+                    <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full text-center">
+                      <span className="block text-xs opacity-80 leading-tight">Active</span>
+                      {activeSub.plan.name}
+                    </div>
+                  ) : (
+                    <div className="text-[10px] font-bold uppercase text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                      No Plan
+                    </div>
+                  )}
                 </div>
-                <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">
-                  Active Pro
-                </div>
+              );
+            }) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">No members registered yet.</p>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 

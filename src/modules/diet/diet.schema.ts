@@ -13,7 +13,9 @@ export const createDietPlanSchema = z.object({
             protein: z.number().min(0),
             carbs: z.number().min(0),
             fats: z.number().min(0),
-            calories: z.number().min(0)
+            calories: z.number().min(0),
+            quantity: z.number().min(0),
+            unit: z.string()
         }))
     }))
 });

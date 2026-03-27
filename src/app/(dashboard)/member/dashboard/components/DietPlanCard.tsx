@@ -41,8 +41,8 @@ export function DietPlanCard({ memberDietPlan }: DietPlanCardProps) {
   // Calculate totals
   const totalMacros = useMemo(() => {
     let p = 0, c = 0, f = 0, cal = 0;
-    dietPlan.meals?.forEach(m => {
-      m.foodItems?.forEach(item => {
+    dietPlan.meals?.forEach((m: any) => {
+      m.foodItems?.forEach((item: any) => {
         p += item.protein;
         c += item.carbs;
         f += item.fats;
@@ -119,11 +119,11 @@ export function DietPlanCard({ memberDietPlan }: DietPlanCardProps) {
                 )}
               </div>
               <div className="p-2 space-y-1">
-                {meal.foodItems.length > 0 ? meal.foodItems.map(item => (
+                {meal.foodItems.length > 0 ? meal.foodItems.map((item: any) => (
                   <div key={item.id} className="flex justify-between items-center p-2 hover:bg-muted/30 rounded-lg transition-colors">
                     <span className="font-medium text-sm text-foreground">{item.name}</span>
                     <div className="text-xs text-muted-foreground flex items-center gap-3">
-                      <span className="w-12 text-right">{item.calories} <span className="text-[10px]">kcal</span></span>
+                      <span className="w-12 text-right">{Math.round(item.calories)} <span className="text-[10px]">kcal</span></span>
                     </div>
                   </div>
                 )) : (

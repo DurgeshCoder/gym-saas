@@ -53,14 +53,32 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         // Delete existing meals to recreate them cleanly
         await prisma.dietMeal.deleteMany({ where: { dietPlanId: id } });
 
-        // Auto calculate total calories from all meals consistently
+        // Helper functions for correct calculation
+        const calculateItemMacros = (item: any) => {
+            const multiplier = item.unit === "g" || item.unit === "ml" 
+                ? (item.quantity / 100) 
+                : item.quantity;
+            
+            return {
+                name: item.name,
+                protein: item.protein * multiplier,
+                carbs: item.carbs * multiplier,
+                fats: item.fats * multiplier,
+                calories: Math.round(item.calories * multiplier)
+            };
+        };
+
+        const calculateMealCalories = (meal: any) => {
+            return meal.foodItems.reduce((acc: number, item: any) => acc + calculateItemMacros(item).calories, 0);
+        };
+
+        const calculateDayCalories = (meals: any[]) => {
+            return meals.reduce((acc: number, meal: any) => acc + calculateMealCalories(meal), 0);
+        };
+
         let totalCals = 0;
         if (data.meals && data.meals.length > 0) {
-            for (const meal of data.meals) {
-                for (const item of meal.foodItems) {
-                    totalCals += item.calories;
-                }
-            }
+            totalCals = Math.round(calculateDayCalories(data.meals));
         }
 
         const dietPlan = await prisma.dietPlan.update({
@@ -75,13 +93,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                         mealType: meal.mealType,
                         time: meal.time,
                         foodItems: {
-                            create: meal.foodItems.map(item => ({
-                                name: item.name,
-                                protein: item.protein,
-                                carbs: item.carbs,
-                                fats: item.fats,
-                                calories: item.calories
-                            }))
+                            create: meal.foodItems.map(item => calculateItemMacros(item))
                         }
                     }))
                 }

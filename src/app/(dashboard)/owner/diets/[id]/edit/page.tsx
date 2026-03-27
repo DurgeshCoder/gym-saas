@@ -45,7 +45,7 @@ export default function EditDietPage() {
                 {
                     mealType: "BREAKFAST",
                     time: "08:00 AM",
-                    foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0 }]
+                    foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" }]
                 }
             ]
         }
@@ -68,8 +68,11 @@ export default function EditDietPage() {
                     description: plan.description || "",
                     meals: plan.meals?.map((meal: any) => ({
                         ...meal,
-                        time: meal.time || "",
-                        foodItems: meal.foodItems || []
+                        foodItems: meal.foodItems?.map((item: any) => ({
+                            ...item,
+                            quantity: 1,
+                            unit: "serving"
+                        })) || []
                     })) || []
                 };
                 form.reset(sanitizedData);
@@ -213,7 +216,7 @@ export default function EditDietPage() {
                                 onClick={() => appendMeal({
                                     mealType: "LUNCH",
                                     time: "12:00 PM",
-                                    foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0 }]
+                                    foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" }]
                                 })}
                                 className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold"
                             >
@@ -314,7 +317,7 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            onClick={() => appendFood({ name: "", protein: 0, carbs: 0, fats: 0, calories: 0 })}
+                            onClick={() => appendFood({ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" })}
                             className="h-8 text-xs font-bold"
                         >
                             <Plus className="w-3 h-3 mr-1" /> Add Food
@@ -334,7 +337,7 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                                     <Trash2 className="w-4 h-4" />
                                 </Button>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 pr-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 pr-6">
                                     <div className="lg:col-span-1">
                                         <FormField
                                             control={control}
@@ -353,10 +356,49 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                                     <div className="lg:col-span-1">
                                         <FormField
                                             control={control}
+                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.quantity`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Qty</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="lg:col-span-1">
+                                        <FormField
+                                            control={control}
+                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.unit`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Unit</FormLabel>
+                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-background h-8 text-[12px] px-2">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="g">grams</SelectItem>
+                                                            <SelectItem value="serving">serving</SelectItem>
+                                                            <SelectItem value="ml">ml</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="lg:col-span-1">
+                                        <FormField
+                                            control={control}
                                             name={`meals.${mealIndex}.foodItems.${foodIndex}.protein`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Protein (g)</FormLabel>
+                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Prot (g)</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
                                                     </FormControl>
@@ -401,7 +443,7 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                                             name={`meals.${mealIndex}.foodItems.${foodIndex}.calories`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Calories</FormLabel>
+                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Cals</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm font-bold text-emerald-600" />
                                                     </FormControl>

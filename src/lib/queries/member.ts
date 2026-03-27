@@ -67,3 +67,24 @@ export async function getMemberDashboardData(userId: string) {
 }
 
 export type MemberDashboardData = Awaited<ReturnType<typeof getMemberDashboardData>>;
+
+export async function getMemberPayments(userId: string) {
+  return await prisma.payment.findMany({
+    where: { userId },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+      gym: {
+        select: {
+          name: true,
+        }
+      }
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export type MemberPaymentsData = Awaited<ReturnType<typeof getMemberPayments>>;

@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Activity,
   Utensils,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -87,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "My Subscription", href: "/member/subscription", icon: CreditCard },
     { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
     { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
-    { name: "Bookings", href: "/member/bookings", icon: CalendarDays },
+    { name: "Payments", href: "/member/payments", icon: Receipt },
   ];
 
   const superAdminLinks = [

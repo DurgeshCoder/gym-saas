@@ -65,7 +65,7 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
         <div>
           <h4 className="text-3xl font-black mb-1">{plan.name}</h4>
           <p className="text-2xl font-bold text-muted-foreground">
-            ${plan.price}
+            ₹{plan.price}
             <span className="text-sm font-medium ml-1">/{plan.duration} days</span>
           </p>
         </div>
@@ -114,7 +114,7 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
                   <CreditCard className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">${payments[0].amount}</p>
+                  <p className="font-medium">₹{payments[0].amount}</p>
                   <p className="text-xs text-muted-foreground">{formatDate(payments[0].createdAt)}</p>
                 </div>
               </div>

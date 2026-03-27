@@ -18,7 +18,7 @@ export default async function OwnerDashboardPage() {
   const stats = [
     { name: "Total Members", value: "24", icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
     { name: "Active Subscriptions", value: "18", icon: Dumbbell, color: "text-emerald-600", bg: "bg-emerald-100" },
-    { name: "Monthly Revenue", value: "$4,290", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100" },
+    { name: "Monthly Revenue", value: "₹4,290", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100" },
     { name: "Expiring Soon", value: "3", icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-100" },
   ];
 

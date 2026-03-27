@@ -4,8 +4,8 @@
 
 /* Core Imports */
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "../../node_modules/tw-animate-css/dist/tw-animate.css";
+@import "../../node_modules/shadcn/dist/tailwind.css";
 
 /* Dark mode variant */
 @custom-variant dark (&:is(.dark *));

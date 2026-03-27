@@ -1,0 +1,37 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getMemberDashboardData } from "@/lib/queries/member";
+import { SubscriptionCard } from "../dashboard/components/SubscriptionCard";
+
+export const metadata = {
+  title: "My Subscription | Gym SaaS",
+};
+
+export default async function SubscriptionPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user || !(session.user as any).id) {
+    redirect("/login");
+  }
+
+  const role = (session.user as any).role;
+  if (role !== "MEMBER" && role !== "GYM_OWNER" && role !== "SUPER_ADMIN" && role !== "TRAINER") {
+    redirect("/login");
+  }
+
+  const dashboardData = await getMemberDashboardData((session.user as any).id);
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Subscription Details</h1>
+        <p className="text-muted-foreground">Manage and view your current membership plan.</p>
+      </div>
+
+      <div className="h-full">
+        <SubscriptionCard subscription={dashboardData.subscription} />
+      </div>
+    </div>
+  );
+}

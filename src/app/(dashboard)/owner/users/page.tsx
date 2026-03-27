@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell, Eye, Calendar, CreditCard, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Mail, Activity, Dumbbell, Eye, Calendar, CreditCard, Clock, CheckCircle2, XCircle, AlertTriangle, Utensils } from "lucide-react";
 import { DataTable, SearchFilterBar, ConfirmModal, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -43,6 +43,7 @@ interface UserDetail extends UserRecord {
     progress: number;
     workoutPlan: { id: string; name: string };
   }>;
+  assignedDietPlans?: any[];
 }
 
 export default function OwnerUsersPage() {
@@ -71,6 +72,7 @@ export default function OwnerUsersPage() {
   const [viewLoading, setViewLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [confirmRemoveWorkoutId, setConfirmRemoveWorkoutId] = useState<string | null>(null);
+  const [confirmRemoveDietId, setConfirmRemoveDietId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Forms
@@ -219,6 +221,24 @@ export default function OwnerUsersPage() {
       }
     } catch {
       toast.error("Failed to remove workout plan");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRemoveDiet = async (assignmentId: string) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/diets/assign/${assignmentId}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Diet plan removed");
+        if (viewUserData) fetchUserDetail(viewUserData.id);
+        setConfirmRemoveDietId(null);
+      } else {
+        throw new Error("Failed");
+      }
+    } catch {
+      toast.error("Failed to remove diet plan");
     } finally {
       setSubmitting(false);
     }
@@ -497,6 +517,41 @@ export default function OwnerUsersPage() {
                   )}
                 </div>
 
+                {/* Assigned Diet Plans */}
+                <div className="space-y-4">
+                  <h5 className="font-bold text-foreground flex items-center gap-2">
+                    <Utensils className="w-4 h-4 text-emerald-600" /> Assigned Diet Plans
+                  </h5>
+                  {viewUserData.assignedDietPlans && viewUserData.assignedDietPlans.length > 0 ? (
+                    <div className="grid gap-3">
+                      {viewUserData.assignedDietPlans.map((assignment: any) => (
+                        <div key={assignment.id} className="p-4 rounded-xl border border-border bg-background shadow-sm flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-foreground">{assignment.dietPlan.name}</p>
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" /> Started: {new Date(assignment.startDate).toLocaleDateString()}
+                              <span className="mx-2">•</span>
+                              <span className="font-medium text-emerald-700">{assignment.dietPlan.totalCalories} kcal</span> • {assignment.dietPlan.goal.replace("_", " ")}
+                            </p>
+                          </div>
+                          <div className="text-right flex items-center gap-4">
+                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${assignment.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : 'text-muted-foreground bg-muted'}`}>
+                              {assignment.status}
+                            </span>
+                            <button onClick={() => setConfirmRemoveDietId(assignment.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
+                      <p className="text-sm text-muted-foreground italic">No assigned diet plans found.</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Payments */}
                 <div className="space-y-4">
                   <h5 className="font-bold text-foreground flex items-center gap-2">
@@ -647,6 +702,18 @@ export default function OwnerUsersPage() {
         confirmText="Remove"
         icon={<Trash2 className="w-7 h-7 text-destructive" />}
         onConfirm={() => handleRemoveWorkout(confirmRemoveWorkoutId as string)}
+        isLoading={submitting}
+      />
+
+      {/* ── Remove Diet Confirmation ── */}
+      <ConfirmModal
+        open={!!confirmRemoveDietId}
+        onOpenChange={(open) => !open && setConfirmRemoveDietId(null)}
+        title="Remove Diet Plan"
+        description="Are you sure you want to remove this assigned diet? The user will no longer see this plan."
+        confirmText="Remove"
+        icon={<Trash2 className="w-7 h-7 text-destructive" />}
+        onConfirm={() => handleRemoveDiet(confirmRemoveDietId as string)}
         isLoading={submitting}
       />
     </div>

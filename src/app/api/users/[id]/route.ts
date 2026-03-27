@@ -52,6 +52,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           include: { workoutPlan: { select: { id: true, name: true } } },
           orderBy: { createdAt: "desc" },
         },
+        assignedDietPlans: {
+          include: { dietPlan: { select: { id: true, name: true, totalCalories: true, goal: true } } },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

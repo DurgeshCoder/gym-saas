@@ -15,6 +15,7 @@ import {
   Building2,
   ShieldCheck,
   Activity,
+  Utensils,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -69,6 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Users & Staff", href: "/owner/users", icon: Users },
     { name: "Membership Plans", href: "/owner/plans", icon: Dumbbell },
     { name: "Workout Plans", href: "/owner/workouts", icon: Activity },
+    { name: "Diet Plans", href: "/owner/diets", icon: Utensils },
     { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
     { name: "Payments", href: "/owner/payments", icon: CreditCard },
     { name: "Gym Settings", href: "/owner/settings", icon: Settings },
@@ -81,8 +83,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   const memberLinks = [
-    { name: "My Dashboard", href: "/member", icon: LayoutDashboard },
-    { name: "My Plan", href: "/member/plan", icon: Dumbbell },
+    { name: "Dashboard", href: "/member/dashboard", icon: LayoutDashboard },
+    { name: "My Subscription", href: "/member/subscription", icon: CreditCard },
+    { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
+    { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
     { name: "Bookings", href: "/member/bookings", icon: CalendarDays },
   ];
 

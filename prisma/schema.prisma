@@ -33,6 +33,7 @@ model Gym {
   subscriptions Subscription[]
   payments      Payment[]
   workoutPlans  WorkoutPlan[]  @relation("GymWorkoutPlans")
+  dietPlans     DietPlan[]     @relation("GymDietPlans")
 }
 
 // -----------------------------------------------------------------------------
@@ -75,6 +76,10 @@ model User {
   // Workout Plans
   createdWorkoutPlans  WorkoutPlan[] @relation("CreatedWorkoutPlans")
   assignedWorkoutPlans MemberWorkoutPlan[] @relation("AssignedWorkoutPlans")
+
+  // Diet Plans
+  createdDietPlans     DietPlan[] @relation("CreatedDietPlans")
+  assignedDietPlans    MemberDietPlan[] @relation("AssignedDietPlans")
 }
 
 // -----------------------------------------------------------------------------
@@ -263,3 +268,88 @@ model MemberWorkoutPlan {
   @@index([workoutPlanId])
 }
 
+// -----------------------------------------------------------------------------
+// DIET PLAN MODULE
+// -----------------------------------------------------------------------------
+
+enum DietGoal {
+  WEIGHT_LOSS
+  MUSCLE_GAIN
+  MAINTENANCE
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model DietPlan {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?  @db.Text
+  goal          DietGoal
+  totalCalories Int
+  
+  gymId         String
+  gym           Gym      @relation("GymDietPlans", fields: [gymId], references: [id], onDelete: Cascade)
+  
+  creatorId     String
+  creator       User     @relation("CreatedDietPlans", fields: [creatorId], references: [id])
+  
+  meals         DietMeal[]
+  assignments   MemberDietPlan[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([gymId])
+  @@index([creatorId])
+}
+
+model DietMeal {
+  id          String   @id @default(cuid())
+  mealType    MealType
+  time        String?  // e.g., "08:00 AM"
+  
+  dietPlanId  String
+  dietPlan    DietPlan @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  
+  foodItems   FoodItem[]
+
+  @@index([dietPlanId])
+}
+
+model FoodItem {
+  id          String   @id @default(cuid())
+  name        String
+  protein     Float
+  carbs       Float
+  fats        Float
+  calories    Float
+  
+  dietMealId  String
+  dietMeal    DietMeal @relation(fields: [dietMealId], references: [id], onDelete: Cascade)
+
+  @@index([dietMealId])
+}
+
+model MemberDietPlan {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation("AssignedDietPlans", fields: [userId], references: [id], onDelete: Cascade)
+  
+  dietPlanId  String
+  dietPlan    DietPlan   @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  
+  startDate   DateTime
+  endDate     DateTime?
+  status      PlanStatus @default(ACTIVE)
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([dietPlanId])
+}

@@ -22,8 +22,11 @@ model Gym {
   description String? @db.Text
   openingHours Json?
   socialLinks  Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  razorpayKeyId     String?
+  razorpayKeySecret String?
 
   ownerId   String   @unique
   owner     User     @relation("GymOwner", fields: [ownerId], references: [id])
@@ -126,6 +129,7 @@ enum PaymentMethod {
   CARD
   CASH
   PAYPAL
+  RAZORPAY
 }
 
 enum PaymentStatus {
@@ -146,6 +150,11 @@ model Payment {
   gymId          String
   gym            Gym            @relation(fields: [gymId], references: [id])
   createdAt      DateTime       @default(now())
+
+  // Razorpay Specific Fields
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  razorpaySignature String?
 }
 
 // -----------------------------------------------------------------------------

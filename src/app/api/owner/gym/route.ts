@@ -49,7 +49,7 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { name, logo, address, phone, email, website, description, openingHours, socialLinks } = body;
+    const { name, logo, address, phone, email, website, description, openingHours, socialLinks, razorpayKeyId, razorpayKeySecret } = body;
 
     if (!name) {
       return NextResponse.json({ message: "Gym name is required" }, { status: 400 });
@@ -68,6 +68,8 @@ export async function PUT(req: Request) {
       description,
       openingHours: openingHours || {},
       socialLinks: socialLinks || {},
+      razorpayKeyId: razorpayKeyId || null,
+      razorpayKeySecret: razorpayKeySecret || null,
     };
 
     const updated = await prisma.gym.upsert({

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CreditCard, Activity, CalendarDays } from "lucide-react";
 import { MemberDashboardData } from "@/lib/queries/member";
+import { RazorpayButton } from "./RazorpayButton";
 
 type SubscriptionData = NonNullable<MemberDashboardData>["subscription"];
 
@@ -102,6 +103,9 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
                 Expiring soon!
               </p>
             )}
+          </div>
+          <div className="pt-2">
+            <RazorpayButton amount={plan.price} subscriptionId={subscription.id} />
           </div>
         </div>
 

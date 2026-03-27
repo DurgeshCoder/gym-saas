@@ -35,6 +35,8 @@ interface GymSettings {
     twitter: string;
     youtube: string;
   };
+  razorpayKeyId?: string;
+  razorpayKeySecret?: string;
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -58,6 +60,8 @@ export default function OwnerSettingsPage() {
     description: "",
     openingHours: defaultHours,
     socialLinks: defaultSocials,
+    razorpayKeyId: "",
+    razorpayKeySecret: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,6 +82,8 @@ export default function OwnerSettingsPage() {
             description: data.description || "",
             openingHours: data.openingHours || defaultHours,
             socialLinks: data.socialLinks || defaultSocials,
+            razorpayKeyId: data.razorpayKeyId || "",
+            razorpayKeySecret: data.razorpayKeySecret || "",
           });
         }
       }
@@ -191,7 +197,7 @@ export default function OwnerSettingsPage() {
                         onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
                         placeholder="https://imgur.com/logo.png"
                       />
-                      <div className="w-14 h-14 min-w-[3.5rem] rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden">
+                      <div className="w-14 h-14 min-w-14 rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden">
                         {formData.logo ? (
                           <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
                         ) : (
@@ -290,6 +296,38 @@ export default function OwnerSettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* ── Payment Gateway ── */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Settings className="w-5 h-5 text-primary" />
+                  Payment Gateway (Razorpay)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelCls}>Key ID</label>
+                    <Input
+                      type="text"
+                      value={formData.razorpayKeyId}
+                      onChange={(e) => setFormData({ ...formData, razorpayKeyId: e.target.value })}
+                      placeholder="rzp_test_..."
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Key Secret</label>
+                    <Input
+                      type="password"
+                      value={formData.razorpayKeySecret}
+                      onChange={(e) => setFormData({ ...formData, razorpayKeySecret: e.target.value })}
+                      placeholder="Enter secret key"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* ── Opening Hours (Right Column) ── */}
@@ -341,7 +379,7 @@ export default function OwnerSettingsPage() {
         </div>
 
         {/* ── Sticky Action Bar ── */}
-        <div className="sticky bottom-8 z-[20] p-6 rounded-lg bg-card border border-border flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4">
+        <div className="sticky bottom-8 z-20 p-6 rounded-lg bg-card border border-border flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4">
           <div>
             <p className="font-bold text-lg flex items-center gap-2 text-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" /> Ready to Update?

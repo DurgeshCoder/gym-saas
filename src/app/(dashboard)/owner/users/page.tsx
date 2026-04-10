@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UserRecord {
   id: string;
@@ -426,174 +427,213 @@ export default function OwnerUsersPage() {
                 <p className="text-sm font-medium">Loading user details...</p>
               </div>
             ) : viewUserData ? (
-              <>
-                {/* Basic Info */}
-                <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-2xl border border-border">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold shadow-sm">
-                    {viewUserData.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-foreground">{viewUserData.name}</h4>
-                    <p className="text-muted-foreground font-medium">{viewUserData.email}</p>
-                    <div className="flex gap-2 mt-2">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-secondary-foreground">{viewUserData.role}</span>
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${viewUserData.active ? "bg-emerald-100 text-emerald-700" : "bg-destructive/10 text-destructive"}`}>
+              <div className="space-y-6">
+                {/* Premium Banner & Avatar Profile */}
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
+                  {/* Subtle Gradient Header */}
+                  <div className="h-24 w-full bg-gradient-to-r from-emerald-500/10 via-primary/5 to-blue-500/10 border-b border-border"></div>
+                  
+                  <div className="px-6 pb-6 -mt-12 relative flex flex-col sm:flex-row items-center sm:items-end gap-5">
+                    <div className="w-24 h-24 rounded-full border-4 border-card bg-primary/10 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-lg">
+                      {viewUserData.profilePhoto ? (
+                        <img src={viewUserData.profilePhoto} alt={viewUserData.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-3xl font-bold text-primary">{viewUserData.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 text-center sm:text-left mb-1">
+                      <h4 className="text-2xl font-bold text-foreground">{viewUserData.name}</h4>
+                      <p className="text-sm font-medium text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5 mt-0.5">
+                        <Mail className="w-3.5 h-3.5" />
+                        {viewUserData.email}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-secondary text-secondary-foreground shadow-sm">
+                        {viewUserData.role}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${viewUserData.active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-destructive/10 text-destructive"}`}>
                         {viewUserData.active ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Subscriptions */}
-                <div className="space-y-4">
-                  <h5 className="font-bold text-foreground flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-primary" /> Membership History
-                  </h5>
-                  {viewUserData.subscriptions.length > 0 ? (
-                    <div className="grid gap-3">
-                      {viewUserData.subscriptions.map((sub) => (
-                        <div key={sub.id} className="p-4 rounded-xl border border-border bg-background shadow-sm flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-foreground">{sub.plan.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> {new Date(sub.startDate).toLocaleDateString()} - {new Date(sub.endDate).toLocaleDateString()}
-                            </p>
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="w-full justify-start border-b border-border rounded-none h-12 bg-transparent p-0 mb-6 gap-6">
+                    <TabsTrigger value="overview" className="data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent px-1 pb-3 pt-3 rounded-none">Overview</TabsTrigger>
+                    <TabsTrigger value="plans" className="data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent px-1 pb-3 pt-3 rounded-none">Assigned Plans</TabsTrigger>
+                    <TabsTrigger value="billing" className="data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent px-1 pb-3 pt-3 rounded-none">Billing</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="overview" className="mt-0">
+                    <div className="space-y-6">
+                      {/* Subscriptions */}
+                      <div>
+                        <h5 className="font-bold text-foreground flex items-center gap-2 mb-4">
+                          <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Membership History
+                        </h5>
+                        {viewUserData.subscriptions.length > 0 ? (
+                          <div className="grid gap-3">
+                            {viewUserData.subscriptions.map((sub) => (
+                              <div key={sub.id} className="p-4 rounded-xl border border-border bg-card/50 shadow-sm flex items-center justify-between hover:bg-card transition-colors">
+                                <div>
+                                  <p className="font-bold text-foreground">{sub.plan.name}</p>
+                                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" /> {new Date(sub.startDate).toLocaleDateString()} - {new Date(sub.endDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  {sub.active && !isExpired(sub.endDate) ? (
+                                    <div className="flex flex-col items-end gap-1">
+                                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg">
+                                        <CheckCircle2 className="w-3 h-3" /> Active
+                                      </span>
+                                      <p className="text-[10px] font-bold text-primary">
+                                        {daysRemaining(sub.endDate)} days left
+                                      </p>
+                                    </div>
+                                  ) : !sub.active ? (
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-lg">
+                                      <XCircle className="w-3 h-3" /> Cancelled
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
+                                      <AlertTriangle className="w-3 h-3" /> Expired
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <div className="text-right">
-                            {sub.active && !isExpired(sub.endDate) ? (
-                              <div className="flex flex-col items-end gap-1">
-                                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg">
-                                  <CheckCircle2 className="w-3 h-3" /> Active
-                                </span>
-                                <p className="text-[10px] font-bold text-primary">
-                                  {daysRemaining(sub.endDate)} days left
+                        ) : (
+                          <div className="p-8 text-center bg-muted/20 rounded-xl border border-dashed border-border flex flex-col items-center">
+                            <CreditCard className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                            <p className="text-sm text-muted-foreground font-medium">No subscription history.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="plans" className="mt-0 space-y-8">
+                    {/* Workout Plans */}
+                    <div>
+                      <h5 className="font-bold text-foreground flex items-center gap-2 mb-4">
+                        <Dumbbell className="w-4 h-4 text-emerald-600" /> Workout Plans
+                      </h5>
+                      {viewUserData.assignedWorkoutPlans && viewUserData.assignedWorkoutPlans.length > 0 ? (
+                        <div className="grid gap-3">
+                          {viewUserData.assignedWorkoutPlans.map((assignment) => (
+                            <div key={assignment.id} className="p-4 rounded-xl border border-border bg-card/50 shadow-sm flex items-center justify-between hover:bg-card transition-colors">
+                              <div>
+                                <p className="font-bold text-foreground flex items-center gap-2">
+                                  {assignment.workoutPlan.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" /> Started: {new Date(assignment.startDate).toLocaleDateString()}
                                 </p>
                               </div>
-                            ) : !sub.active ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-lg">
-                                <XCircle className="w-3 h-3" /> Cancelled
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-                                <AlertTriangle className="w-3 h-3" /> Expired
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
-                      <p className="text-sm text-muted-foreground italic">No subscription history found.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Workout Plans */}
-                <div className="space-y-4">
-                  <h5 className="font-bold text-foreground flex items-center gap-2">
-                    <Dumbbell className="w-4 h-4 text-emerald-600" /> Assigned Workout Plans
-                  </h5>
-                  {viewUserData.assignedWorkoutPlans && viewUserData.assignedWorkoutPlans.length > 0 ? (
-                    <div className="grid gap-3">
-                      {viewUserData.assignedWorkoutPlans.map((assignment) => (
-                        <div key={assignment.id} className="p-4 rounded-xl border border-border bg-background shadow-sm flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-foreground">{assignment.workoutPlan.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> Started: {new Date(assignment.startDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right flex items-center gap-4">
-                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${assignment.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : 'text-muted-foreground bg-muted'}`}>
-                              {assignment.status}
-                            </span>
-                            <button onClick={() => setConfirmRemoveWorkoutId(assignment.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
-                      <p className="text-sm text-muted-foreground italic">No assigned workout plans found.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Assigned Diet Plans */}
-                <div className="space-y-4">
-                  <h5 className="font-bold text-foreground flex items-center gap-2">
-                    <Utensils className="w-4 h-4 text-emerald-600" /> Assigned Diet Plans
-                  </h5>
-                  {viewUserData.assignedDietPlans && viewUserData.assignedDietPlans.length > 0 ? (
-                    <div className="grid gap-3">
-                      {viewUserData.assignedDietPlans.map((assignment: any) => (
-                        <div key={assignment.id} className="p-4 rounded-xl border border-border bg-background shadow-sm flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-foreground">{assignment.dietPlan.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> Started: {new Date(assignment.startDate).toLocaleDateString()}
-                              <span className="mx-2">•</span>
-                              <span className="font-medium text-emerald-700">{assignment.dietPlan.totalCalories} kcal</span> • {assignment.dietPlan.goal.replace("_", " ")}
-                            </p>
-                          </div>
-                          <div className="text-right flex items-center gap-4">
-                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${assignment.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : 'text-muted-foreground bg-muted'}`}>
-                              {assignment.status}
-                            </span>
-                            <button onClick={() => setConfirmRemoveDietId(assignment.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
-                      <p className="text-sm text-muted-foreground italic">No assigned diet plans found.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Payments */}
-                <div className="space-y-4">
-                  <h5 className="font-bold text-foreground flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-purple-600" /> Recent Transactions
-                  </h5>
-                  {viewUserData.payments.length > 0 ? (
-                    <div className="overflow-hidden border border-border rounded-xl">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-muted text-muted-foreground font-bold">
-                          <tr>
-                            <th className="px-4 py-2">Date</th>
-                            <th className="px-4 py-2">Amount</th>
-                            <th className="px-4 py-2">Method</th>
-                            <th className="px-4 py-2">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {viewUserData.payments.map((p) => (
-                            <tr key={p.id}>
-                              <td className="px-4 py-2">{new Date(p.createdAt).toLocaleDateString()}</td>
-                              <td className="px-4 py-2 font-bold text-emerald-600">₹{p.amount}</td>
-                              <td className="px-4 py-2 text-muted-foreground text-xs">{p.paymentMethod}</td>
-                              <td className="px-4 py-2">
-                                <span className={`text-[10px] font-bold uppercase ${p.status === 'SUCCESS' ? 'text-emerald-500' : 'text-muted-foreground'}`}>
-                                  {p.status}
+                              <div className="text-right flex items-center gap-4">
+                                <span className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2.5 py-1.5 rounded-full ${assignment.status === 'ACTIVE' ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-400' : 'text-muted-foreground bg-muted'}`}>
+                                  {assignment.status}
                                 </span>
-                              </td>
-                            </tr>
+                                <button onClick={() => setConfirmRemoveWorkoutId(assignment.id)} className="text-slate-400 hover:text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center bg-muted/20 rounded-xl border border-dashed border-border flex flex-col items-center">
+                          <Dumbbell className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                          <p className="text-sm text-muted-foreground font-medium">No workout plans assigned yet.</p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <p className="p-4 text-center text-sm text-muted-foreground italic">No payment history.</p>
-                  )}
-                </div>
-              </>
+
+                    {/* Diet Plans */}
+                    <div>
+                      <h5 className="font-bold text-foreground flex items-center gap-2 mb-4">
+                        <Utensils className="w-4 h-4 text-emerald-600" /> Diet Plans
+                      </h5>
+                      {viewUserData.assignedDietPlans && viewUserData.assignedDietPlans.length > 0 ? (
+                        <div className="grid gap-3">
+                          {viewUserData.assignedDietPlans.map((assignment: any) => (
+                            <div key={assignment.id} className="p-4 rounded-xl border border-border bg-card/50 shadow-sm flex items-center justify-between hover:bg-card transition-colors">
+                              <div>
+                                <p className="font-bold text-foreground">{assignment.dietPlan.name}</p>
+                                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" /> {new Date(assignment.startDate).toLocaleDateString()}
+                                  <span className="mx-1.5 opacity-50">•</span>
+                                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{assignment.dietPlan.totalCalories} kcal</span>
+                                  <span className="mx-1.5 opacity-50">•</span>
+                                  {assignment.dietPlan.goal.replace("_", " ")}
+                                </p>
+                              </div>
+                              <div className="text-right flex items-center gap-4">
+                                <span className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2.5 py-1.5 rounded-full ${assignment.status === 'ACTIVE' ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-400' : 'text-muted-foreground bg-muted'}`}>
+                                  {assignment.status}
+                                </span>
+                                <button onClick={() => setConfirmRemoveDietId(assignment.id)} className="text-slate-400 hover:text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors" title="Remove Assignment">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center bg-muted/20 rounded-xl border border-dashed border-border flex flex-col items-center">
+                          <Utensils className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                          <p className="text-sm text-muted-foreground font-medium">No diet plans assigned yet.</p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="billing" className="mt-0">
+                    <div className="space-y-4">
+                      <h5 className="font-bold text-foreground flex items-center gap-2 mb-4">
+                        <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Recent Transactions
+                      </h5>
+                      {viewUserData.payments.length > 0 ? (
+                        <div className="overflow-hidden border border-border rounded-xl shadow-sm">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-muted/50 text-muted-foreground font-medium text-xs uppercase tracking-wider">
+                              <tr>
+                                <th className="px-5 py-3">Date</th>
+                                <th className="px-5 py-3">Method</th>
+                                <th className="px-5 py-3">Amount</th>
+                                <th className="px-5 py-3 text-right">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border bg-card">
+                              {viewUserData.payments.map((p) => (
+                                <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                                  <td className="px-5 py-3 text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</td>
+                                  <td className="px-5 py-3 font-medium text-foreground">{p.paymentMethod}</td>
+                                  <td className="px-5 py-3 font-bold text-emerald-600 dark:text-emerald-400">₹{p.amount}</td>
+                                  <td className="px-5 py-3 text-right">
+                                    <span className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${p.status === 'SUCCESS' ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400' : 'text-muted-foreground bg-muted'}`}>
+                                      {p.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center bg-muted/20 rounded-xl border border-dashed border-border flex flex-col items-center">
+                          <Clock className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                          <p className="text-sm text-muted-foreground font-medium">No payment history on record.</p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             ) : (
               <p className="text-center text-destructive py-8">Failed to load user information.</p>
             )}

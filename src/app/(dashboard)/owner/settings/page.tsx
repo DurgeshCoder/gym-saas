@@ -13,12 +13,38 @@ import {
   Building2,
   CheckCircle2,
   Clock,
+  Plus,
+  Trash2,
+  Sun,
+  Sunrise,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+/* ─── Types ─── */
+
+interface Shift {
+  name: string;
+  open: string;
+  close: string;
+}
+
+interface DayHours {
+  closed: boolean;
+  open: string;
+  close: string;
+  shifts: Shift[];
+}
+
+type HoursType = "full_day" | "shifts";
+
+interface OpeningHoursData {
+  type: HoursType;
+  [day: string]: DayHours | HoursType; // day entries + 'type' key
+}
 
 interface GymSettings {
   name: string;
@@ -28,7 +54,7 @@ interface GymSettings {
   email: string;
   website: string;
   description: string;
-  openingHours: Record<string, { open: string; close: string; closed: boolean }>;
+  openingHours: OpeningHoursData;
   socialLinks: {
     instagram: string;
     facebook: string;
@@ -41,12 +67,48 @@ interface GymSettings {
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const defaultHours = DAYS.reduce((acc, day) => ({
-  ...acc,
-  [day]: { open: "06:00", close: "22:00", closed: false }
-}), {});
+const defaultDayHours: DayHours = { closed: false, open: "06:00", close: "22:00", shifts: [{ name: "Morning", open: "06:00", close: "12:00" }, { name: "Evening", open: "16:00", close: "22:00" }] };
+
+const buildDefaultHours = (): OpeningHoursData => {
+  const hours: any = { type: "full_day" as HoursType };
+  DAYS.forEach(day => {
+    hours[day] = { ...defaultDayHours, shifts: defaultDayHours.shifts.map(s => ({ ...s })) };
+  });
+  return hours;
+};
 
 const defaultSocials = { instagram: "", facebook: "", twitter: "", youtube: "" };
+
+/* ─── Migrate old format to new ─── */
+function migrateOpeningHours(raw: any): OpeningHoursData {
+  if (!raw || typeof raw !== "object") return buildDefaultHours();
+
+  // Already new format
+  if (raw.type === "full_day" || raw.type === "shifts") {
+    // Ensure every day has the shifts array
+    DAYS.forEach(day => {
+      if (raw[day]) {
+        if (!raw[day].shifts) raw[day].shifts = [{ name: "Morning", open: "06:00", close: "12:00" }, { name: "Evening", open: "16:00", close: "22:00" }];
+      } else {
+        raw[day] = { ...defaultDayHours, shifts: defaultDayHours.shifts.map(s => ({ ...s })) };
+      }
+    });
+    return raw as OpeningHoursData;
+  }
+
+  // Old format: { Monday: { open, close, closed }, ... }
+  const migrated: any = { type: "full_day" as HoursType };
+  DAYS.forEach(day => {
+    const old = raw[day];
+    migrated[day] = {
+      closed: old?.closed ?? false,
+      open: old?.open ?? "06:00",
+      close: old?.close ?? "22:00",
+      shifts: [{ name: "Morning", open: "06:00", close: "12:00" }, { name: "Evening", open: "16:00", close: "22:00" }],
+    };
+  });
+  return migrated as OpeningHoursData;
+}
 
 export default function OwnerSettingsPage() {
   const { update } = useSession();
@@ -58,7 +120,7 @@ export default function OwnerSettingsPage() {
     email: "",
     website: "",
     description: "",
-    openingHours: defaultHours,
+    openingHours: buildDefaultHours(),
     socialLinks: defaultSocials,
     razorpayKeyId: "",
     razorpayKeySecret: "",
@@ -80,7 +142,7 @@ export default function OwnerSettingsPage() {
             email: data.email || "",
             website: data.website || "",
             description: data.description || "",
-            openingHours: data.openingHours || defaultHours,
+            openingHours: migrateOpeningHours(data.openingHours),
             socialLinks: data.socialLinks || defaultSocials,
             razorpayKeyId: data.razorpayKeyId || "",
             razorpayKeySecret: data.razorpayKeySecret || "",
@@ -124,20 +186,50 @@ export default function OwnerSettingsPage() {
     }
   };
 
-  const updateHour = (day: string, field: "open" | "close" | "closed", value: any) => {
+  /* ─── Hours helpers ─── */
+  const getDayHours = (day: string): DayHours => formData.openingHours[day] as DayHours;
+  const hoursType = formData.openingHours.type as HoursType;
+
+  const setHoursType = (type: HoursType) => {
+    setFormData(prev => ({
+      ...prev,
+      openingHours: { ...prev.openingHours, type },
+    }));
+  };
+
+  const updateDayHours = (day: string, patch: Partial<DayHours>) => {
     setFormData(prev => ({
       ...prev,
       openingHours: {
         ...prev.openingHours,
-        [day]: { ...prev.openingHours[day], [field]: value }
-      }
+        [day]: { ...(prev.openingHours[day] as DayHours), ...patch },
+      },
     }));
+  };
+
+  const addShift = (day: string) => {
+    const dh = getDayHours(day);
+    const newShifts = [...dh.shifts, { name: `Shift ${dh.shifts.length + 1}`, open: "09:00", close: "17:00" }];
+    updateDayHours(day, { shifts: newShifts });
+  };
+
+  const removeShift = (day: string, idx: number) => {
+    const dh = getDayHours(day);
+    if (dh.shifts.length <= 1) return; // keep at least 1
+    const newShifts = dh.shifts.filter((_, i) => i !== idx);
+    updateDayHours(day, { shifts: newShifts });
+  };
+
+  const updateShift = (day: string, idx: number, patch: Partial<Shift>) => {
+    const dh = getDayHours(day);
+    const newShifts = dh.shifts.map((s, i) => (i === idx ? { ...s, ...patch } : s));
+    updateDayHours(day, { shifts: newShifts });
   };
 
   const updateSocial = (platform: keyof GymSettings["socialLinks"], value: string) => {
     setFormData(prev => ({
       ...prev,
-      socialLinks: { ...prev.socialLinks, [platform]: value }
+      socialLinks: { ...prev.socialLinks, [platform]: value },
     }));
   };
 
@@ -335,44 +427,147 @@ export default function OwnerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Clock className="w-5 h-5 text-primary" />
-                Opening Hours
+                Operating Hours
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {/* Mode Switcher */}
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setHoursType("full_day")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all ${
+                    hoursType === "full_day"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Sun className="w-3.5 h-3.5" />
+                  Full Day
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHoursType("shifts")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all ${
+                    hoursType === "shifts"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Sunrise className="w-3.5 h-3.5" />
+                  Shift Wise
+                </button>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {hoursType === "full_day"
+                  ? "Set a single opening & closing time for each day."
+                  : "Add multiple shifts per day (e.g. Morning, Evening)."}
+              </p>
+
+              {/* Day Rows */}
               <div className="space-y-3">
-                {DAYS.map(day => (
-                  <div key={day} className="p-3 rounded-lg bg-muted/50 border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{day}</span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.openingHours[day]?.closed}
-                          onChange={(e) => updateHour(day, "closed", e.target.checked)}
-                          className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
-                        />
-                        <span className="text-[10px] font-bold uppercase text-muted-foreground">Closed</span>
-                      </label>
-                    </div>
-                    {!formData.openingHours[day]?.closed && (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="time"
-                          value={formData.openingHours[day]?.open}
-                          onChange={(e) => updateHour(day, "open", e.target.value)}
-                          className="text-xs h-8"
-                        />
-                        <span className="text-muted-foreground font-bold px-1">→</span>
-                        <Input
-                          type="time"
-                          value={formData.openingHours[day]?.close}
-                          onChange={(e) => updateHour(day, "close", e.target.value)}
-                          className="text-xs h-8"
-                        />
+                {DAYS.map(day => {
+                  const dh = getDayHours(day);
+                  return (
+                    <div
+                      key={day}
+                      className={`p-3 rounded-lg border transition-colors ${
+                        dh.closed
+                          ? "bg-muted/30 border-border/50"
+                          : "bg-muted/50 border-border"
+                      }`}
+                    >
+                      {/* Day Header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          {day}
+                        </span>
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={dh.closed}
+                            onChange={(e) => updateDayHours(day, { closed: e.target.checked })}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                          />
+                          <span className="text-[10px] font-bold uppercase text-muted-foreground">Closed</span>
+                        </label>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Content when open */}
+                      {!dh.closed && (
+                        <>
+                          {hoursType === "full_day" ? (
+                            /* ── Full Day Mode ── */
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="time"
+                                value={dh.open}
+                                onChange={(e) => updateDayHours(day, { open: e.target.value })}
+                                className="text-xs h-8"
+                              />
+                              <span className="text-muted-foreground font-bold px-1">→</span>
+                              <Input
+                                type="time"
+                                value={dh.close}
+                                onChange={(e) => updateDayHours(day, { close: e.target.value })}
+                                className="text-xs h-8"
+                              />
+                            </div>
+                          ) : (
+                            /* ── Shift Mode ── */
+                            <div className="space-y-2">
+                              {dh.shifts.map((shift, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-1.5 bg-background/60 border border-border/60 rounded-md p-2"
+                                >
+                                  <Input
+                                    type="text"
+                                    value={shift.name}
+                                    onChange={(e) => updateShift(day, idx, { name: e.target.value })}
+                                    placeholder="Shift name"
+                                    className="text-xs h-7 w-[90px] min-w-0 flex-shrink-0"
+                                  />
+                                  <Input
+                                    type="time"
+                                    value={shift.open}
+                                    onChange={(e) => updateShift(day, idx, { open: e.target.value })}
+                                    className="text-xs h-7 min-w-0"
+                                  />
+                                  <span className="text-muted-foreground text-[10px]">→</span>
+                                  <Input
+                                    type="time"
+                                    value={shift.close}
+                                    onChange={(e) => updateShift(day, idx, { close: e.target.value })}
+                                    className="text-xs h-7 min-w-0"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeShift(day, idx)}
+                                    disabled={dh.shifts.length <= 1}
+                                    className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                                    title="Remove shift"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => addShift(day)}
+                                className="flex items-center gap-1.5 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider pt-0.5"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Add Shift
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

@@ -17,6 +17,7 @@ import {
   Activity,
   Utensils,
   Receipt,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -73,6 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Workout Plans", href: "/owner/workouts", icon: Activity },
     { name: "Diet Plans", href: "/owner/diets", icon: Utensils },
     { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
+    { name: "Reminders", href: "/owner/subscriptions/reminders", icon: Bell },
     { name: "Payments", href: "/owner/payments", icon: CreditCard },
     { name: "Gym Settings", href: "/owner/settings", icon: Settings },
   ];

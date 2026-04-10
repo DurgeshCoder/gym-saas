@@ -8,17 +8,23 @@ import {
   CreditCard,
   Calendar,
   Users,
-  Clock,
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
+  Bell,
+  MessageSquare,
+  Mail,
+  Phone,
+  Clock,
 } from "lucide-react";
 import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Link from "next/link";
 
 interface SubRecord {
   id: string;
@@ -68,6 +74,9 @@ export default function OwnerSubscriptionsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState<SubRecord | null>(null);
+  const [showReminderModal, setShowReminderModal] = useState<SubRecord | null>(null);
+  const [reminderChannel, setReminderChannel] = useState("WHATSAPP");
+  const [reminderMessage, setReminderMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -212,6 +221,53 @@ export default function OwnerSubscriptionsPage() {
     }
   };
 
+  // Reminder
+  const openReminder = (s: SubRecord) => {
+    const daysLeft = Math.ceil((new Date(s.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    
+    let defaultMessage = `Hi ${s.user.name}, this is a reminder from your gym. Your subscription for the ${s.plan.name} plan `;
+    if (daysLeft < 0) {
+      defaultMessage += `expired ${Math.abs(daysLeft)} days ago on ${new Date(s.endDate).toLocaleDateString()}. Please renew to continue your fitness journey!`;
+    } else if (daysLeft === 0) {
+      defaultMessage += `expires TODAY. Please renew to avoid any interruption.`;
+    } else {
+      defaultMessage += `is expiring in ${daysLeft} days on ${new Date(s.endDate).toLocaleDateString()}. Please renew soon!`;
+    }
+
+    setReminderMessage(defaultMessage);
+    setShowReminderModal(s);
+  };
+
+  const handleSendReminder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!showReminderModal) return;
+    
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/subscriptions/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscriptionId: showReminderModal.id,
+          userId: showReminderModal.user.id,
+          channel: reminderChannel,
+          message: reminderMessage,
+        }),
+      });
+      if (res.ok) {
+        toast.success("Reminder sent and logged successfully!");
+        setShowReminderModal(null);
+      } else {
+        const err = await res.json();
+        toast.error(err.message || "Failed to send reminder");
+      }
+    } catch {
+      toast.error("Internal Server Error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Helpers
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
@@ -336,6 +392,11 @@ export default function OwnerSubscriptionsPage() {
       align: "right",
       render: (s) => (
         <div className="flex justify-end gap-1">
+          {s.active && (
+            <button onClick={() => openReminder(s)} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors" title="Send Reminder">
+              <Bell className="w-4 h-4" />
+            </button>
+          )}
           <button onClick={() => openEdit(s)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
             <Edit2 className="w-4 h-4" />
           </button>
@@ -359,13 +420,21 @@ export default function OwnerSubscriptionsPage() {
           <h1 className="text-2xl font-extrabold text-foreground">Subscriptions</h1>
           <p className="text-sm text-muted-foreground mt-1">Assign plans to members and manage active subscriptions</p>
         </div>
-        <Button
-          onClick={() => { setCreateData(emptyCreate); setError(""); setShowAddModal(true); }}
-          className="shadow-sm items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Assign Subscription
-        </Button>
+        <div className="flex gap-3">
+          <Link href="/owner/subscriptions/reminders">
+            <Button variant="outline" className="shadow-sm items-center gap-2">
+              <Clock className="w-5 h-5 mr-1" />
+              Reminders
+            </Button>
+          </Link>
+          <Button
+            onClick={() => { setCreateData(emptyCreate); setError(""); setShowAddModal(true); }}
+            className="shadow-sm items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Assign Subscription
+          </Button>
+        </div>
       </div>
 
       {/* Search + Filters */}
@@ -547,6 +616,57 @@ export default function OwnerSubscriptionsPage() {
               {submitting ? "Cancelling..." : "Cancel Subscription"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Send Reminder Modal ── */}
+      <Dialog open={!!showReminderModal} onOpenChange={(open) => !open && setShowReminderModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Bell className="w-5 h-5" /> Send Reminder</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSendReminder} className="space-y-4 pt-4">
+            
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Notification Channel</label>
+              <Select value={reminderChannel} onValueChange={(val) => setReminderChannel(val || "")}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WHATSAPP">
+                    <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-emerald-500" /> WhatsApp</span>
+                  </SelectItem>
+                  <SelectItem value="SMS">
+                    <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-500" /> SMS</span>
+                  </SelectItem>
+                  <SelectItem value="EMAIL">
+                    <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-rose-500" /> Email</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Message Preview</label>
+              <Textarea 
+                value={reminderMessage} 
+                onChange={(e) => setReminderMessage(e.target.value)} 
+                className="min-h-[120px] text-sm"
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                This is a manual system. Clicking send will simulate sending and log the notification in the system.
+              </p>
+            </div>
+            
+            <DialogFooter className="pt-4 flex gap-3">
+              <Button type="button" variant="ghost" onClick={() => setShowReminderModal(null)}>Cancel</Button>
+              <Button type="submit" disabled={submitting} className="bg-primary text-primary-foreground">
+                {submitting ? "Sending..." : "Send Reminder"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

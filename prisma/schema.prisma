@@ -37,6 +37,7 @@ model Gym {
   payments      Payment[]
   workoutPlans  WorkoutPlan[]  @relation("GymWorkoutPlans")
   dietPlans     DietPlan[]     @relation("GymDietPlans")
+  notificationLogs NotificationLog[]
 }
 
 // -----------------------------------------------------------------------------
@@ -83,6 +84,9 @@ model User {
   // Diet Plans
   createdDietPlans     DietPlan[] @relation("CreatedDietPlans")
   assignedDietPlans    MemberDietPlan[] @relation("AssignedDietPlans")
+
+  // Notifications
+  notificationLogs     NotificationLog[]
 }
 
 // -----------------------------------------------------------------------------
@@ -119,6 +123,7 @@ model Subscription {
   updatedAt  DateTime @updatedAt
 
   payments Payment[]
+  notificationLogs NotificationLog[]
 }
 
 // -----------------------------------------------------------------------------
@@ -362,3 +367,32 @@ model MemberDietPlan {
   @@index([userId])
   @@index([dietPlanId])
 }
+
+// -----------------------------------------------------------------------------
+// NOTIFICATIONS / REMINDERS
+// -----------------------------------------------------------------------------
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+model NotificationLog {
+  id             String              @id @default(cuid())
+  gymId          String
+  gym            Gym                 @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  
+  channel        NotificationChannel
+  message        String              @db.Text
+  sentAt         DateTime            @default(now())
+
+  @@index([gymId])
+  @@index([userId])
+  @@index([subscriptionId])
+}
+

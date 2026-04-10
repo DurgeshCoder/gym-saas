@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { sendEmail } from "@/services/emailService";
 
 export async function GET(req: Request) {
   try {
@@ -93,9 +94,20 @@ export async function POST(req: Request) {
       if (!gym.emailApiKey || !gym.emailFromAddress) {
         return NextResponse.json({ message: "Email integration not configured in Gym Settings" }, { status: 400 });
       }
-      // TODO: Use Resend / SendGrid / SMTP SDK natively
-      console.log(`[EMAIL] Sending from ${gym.emailFromAddress} to User ${userId} via ${gym.emailProvider}: ${finalMessage}`);
-      
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user || (!user.email && !user.name)) {
+        return NextResponse.json({ message: "User email address not found" }, { status: 400 });
+      }
+
+      await sendEmail({
+        apiKey: gym.emailApiKey,
+        from: gym.emailFromAddress,
+        to: user.email,
+        subject: `Reminder: Gym Subscription Update`,
+        text: finalMessage,
+      });
+
     } else if (channel === "SMS") {
       if (!gym.twilioAccountSid || !gym.twilioAuthToken || !gym.twilioSmsNumber) {
         return NextResponse.json({ message: "Twilio SMS integration not configured in Gym Settings" }, { status: 400 });

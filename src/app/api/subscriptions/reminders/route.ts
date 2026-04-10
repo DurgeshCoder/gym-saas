@@ -63,6 +63,54 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
+    // Fetch gym settings for credentials
+    const gym = await prisma.gym.findUnique({
+      where: { id: gymId },
+      select: {
+        id: true,
+        name: true,
+        emailProvider: true,
+        emailApiKey: true,
+        emailFromAddress: true,
+        twilioAccountSid: true,
+        twilioAuthToken: true,
+        twilioSmsNumber: true,
+        twilioWhatsappNumber: true,
+      }
+    });
+
+    if (!gym) {
+      return NextResponse.json({ message: "Gym not found" }, { status: 404 });
+    }
+
+    // Attach payment link
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (req.headers.get("origin") || "http://localhost:3000");
+    const paymentLink = `${appUrl}/member/payments`;
+    const finalMessage = `${message}\n\nPay online here: ${paymentLink}`;
+
+    // Validate and "send" based on channel
+    if (channel === "EMAIL") {
+      if (!gym.emailApiKey || !gym.emailFromAddress) {
+        return NextResponse.json({ message: "Email integration not configured in Gym Settings" }, { status: 400 });
+      }
+      // TODO: Use Resend / SendGrid / SMTP SDK natively
+      console.log(`[EMAIL] Sending from ${gym.emailFromAddress} to User ${userId} via ${gym.emailProvider}: ${finalMessage}`);
+      
+    } else if (channel === "SMS") {
+      if (!gym.twilioAccountSid || !gym.twilioAuthToken || !gym.twilioSmsNumber) {
+        return NextResponse.json({ message: "Twilio SMS integration not configured in Gym Settings" }, { status: 400 });
+      }
+      // TODO: Use Twilio SDK: twilio(sid, token).messages.create({ from: smNumber, to: userPhone, body: finalMessage })
+      console.log(`[SMS] Sending from ${gym.twilioSmsNumber} via Twilio SID ${gym.twilioAccountSid}: ${finalMessage}`);
+      
+    } else if (channel === "WHATSAPP") {
+      if (!gym.twilioAccountSid || !gym.twilioAuthToken || !gym.twilioWhatsappNumber) {
+        return NextResponse.json({ message: "Twilio WhatsApp integration not configured in Gym Settings" }, { status: 400 });
+      }
+      // TODO: Use Twilio SDK: twilio(sid, token).messages.create({ from: whatsappNumber, to: 'whatsapp:'+userPhone, body: finalMessage })
+      console.log(`[WHATSAPP] Sending from ${gym.twilioWhatsappNumber} via Twilio SID ${gym.twilioAccountSid}: ${finalMessage}`);
+    }
+
     // Record the notification log
     const log = await prisma.notificationLog.create({
       data: {
@@ -70,7 +118,7 @@ export async function POST(req: Request) {
         userId,
         subscriptionId,
         channel,
-        message,
+        message: finalMessage,
       },
     });
 

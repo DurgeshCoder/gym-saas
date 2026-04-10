@@ -49,7 +49,12 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { name, logo, address, phone, email, website, description, openingHours, socialLinks, razorpayKeyId, razorpayKeySecret } = body;
+    const { 
+      name, logo, address, phone, email, website, description, 
+      openingHours, socialLinks, razorpayKeyId, razorpayKeySecret,
+      emailProvider, emailApiKey, emailFromAddress,
+      twilioAccountSid, twilioAuthToken, twilioSmsNumber, twilioWhatsappNumber
+    } = body;
 
     if (!name) {
       return NextResponse.json({ message: "Gym name is required" }, { status: 400 });
@@ -70,6 +75,13 @@ export async function PUT(req: Request) {
       socialLinks: socialLinks || {},
       razorpayKeyId: razorpayKeyId || null,
       razorpayKeySecret: razorpayKeySecret || null,
+      emailProvider: emailProvider || null,
+      emailApiKey: emailApiKey || null,
+      emailFromAddress: emailFromAddress || null,
+      twilioAccountSid: twilioAccountSid || null,
+      twilioAuthToken: twilioAuthToken || null,
+      twilioSmsNumber: twilioSmsNumber || null,
+      twilioWhatsappNumber: twilioWhatsappNumber || null,
     };
 
     const updated = await prisma.gym.upsert({

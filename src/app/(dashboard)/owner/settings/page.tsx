@@ -26,6 +26,8 @@ import {
   EyeOff,
   Info,
   Sparkles,
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -77,6 +79,13 @@ interface GymSettings {
   };
   razorpayKeyId?: string;
   razorpayKeySecret?: string;
+  emailProvider?: string;
+  emailApiKey?: string;
+  emailFromAddress?: string;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  twilioSmsNumber?: string;
+  twilioWhatsappNumber?: string;
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -170,6 +179,13 @@ export default function OwnerSettingsPage() {
     socialLinks: defaultSocials,
     razorpayKeyId: "",
     razorpayKeySecret: "",
+    emailProvider: "RESEND",
+    emailApiKey: "",
+    emailFromAddress: "",
+    twilioAccountSid: "",
+    twilioAuthToken: "",
+    twilioSmsNumber: "",
+    twilioWhatsappNumber: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -195,6 +211,13 @@ export default function OwnerSettingsPage() {
             socialLinks: data.socialLinks || defaultSocials,
             razorpayKeyId: data.razorpayKeyId || "",
             razorpayKeySecret: data.razorpayKeySecret || "",
+            emailProvider: data.emailProvider || "RESEND",
+            emailApiKey: data.emailApiKey || "",
+            emailFromAddress: data.emailFromAddress || "",
+            twilioAccountSid: data.twilioAccountSid || "",
+            twilioAuthToken: data.twilioAuthToken || "",
+            twilioSmsNumber: data.twilioSmsNumber || "",
+            twilioWhatsappNumber: data.twilioWhatsappNumber || "",
           });
         }
       }
@@ -224,7 +247,6 @@ export default function OwnerSettingsPage() {
         toast.success("Gym profile updated successfully!");
         await fetchSettings();
         await update({ gymId: body.gym.id });
-        setTimeout(() => window.location.reload(), 500);
       } else {
         const err = await res.json();
         toast.error(err.message || "Failed to update profile.");
@@ -357,6 +379,10 @@ export default function OwnerSettingsPage() {
             <TabsTrigger value="hours" className="gap-1.5">
               <Clock className="w-4 h-4" />
               Hours
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-1.5">
+              <Bell className="w-4 h-4" />
+              Email & SMS
             </TabsTrigger>
           </TabsList>
 
@@ -902,6 +928,131 @@ export default function OwnerSettingsPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* ─── TAB: Email & SMS ─── */}
+          <TabsContent value="notifications">
+            <Card className="mt-6  border-primary/20">
+              <CardHeader className="bg-primary/5 border-b border-border/50">
+                <div className="flex items-center mt-6 gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Email Settings</CardTitle>
+                    <CardDescription>Configure your email sender for automatic receipts and manual reminders.</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Provider</label>
+                    <Input
+                      placeholder="e.g. RESEND, SENDGRID, SMTP"
+                      value={formData.emailProvider || ""}
+                      onChange={(e) => setFormData({ ...formData, emailProvider: e.target.value })}
+                      className="h-11 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Send From Address</label>
+                    <Input
+                      placeholder="e.g. notifications@yourgym.com"
+                      value={formData.emailFromAddress || ""}
+                      onChange={(e) => setFormData({ ...formData, emailFromAddress: e.target.value })}
+                      className="h-11 font-medium"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">API Key / SMTP Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Shield className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <Input
+                        type={showSecret ? "text" : "password"}
+                        placeholder="sk_live_..."
+                        value={formData.emailApiKey || ""}
+                        onChange={(e) => setFormData({ ...formData, emailApiKey: e.target.value })}
+                        className="pl-10 h-11 font-mono text-sm tracking-widest"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSecret(!showSecret)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6 border-emerald-500/20">
+              <CardHeader className="bg-emerald-500/5  pt-5 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 border  rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5  text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Twilio SMS & WhatsApp</CardTitle>
+                    <CardDescription>Setup Twilio integration for global mobile notifications.</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Account SID</label>
+                    <Input
+                      placeholder="AC..."
+                      value={formData.twilioAccountSid || ""}
+                      onChange={(e) => setFormData({ ...formData, twilioAccountSid: e.target.value })}
+                      className="h-11 font-mono text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Auth Token</label>
+                    <div className="relative">
+                      <Input
+                        type={showSecret ? "text" : "password"}
+                        placeholder="••••••••••••••••••••••••••••••••"
+                        value={formData.twilioAuthToken || ""}
+                        onChange={(e) => setFormData({ ...formData, twilioAuthToken: e.target.value })}
+                        className="h-11 font-mono text-sm tracking-widest pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSecret(!showSecret)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Twilio Phone Number (SMS)</label>
+                    <Input
+                      placeholder="e.g. +1234567890"
+                      value={formData.twilioSmsNumber || ""}
+                      onChange={(e) => setFormData({ ...formData, twilioSmsNumber: e.target.value })}
+                      className="h-11 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">WhatsApp Sender Number</label>
+                    <Input
+                      placeholder="e.g. whatsapp:+14155238886"
+                      value={formData.twilioWhatsappNumber || ""}
+                      onChange={(e) => setFormData({ ...formData, twilioWhatsappNumber: e.target.value })}
+                      className="h-11 font-medium"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

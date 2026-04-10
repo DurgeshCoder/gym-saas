@@ -28,6 +28,15 @@ model Gym {
   razorpayKeyId     String?
   razorpayKeySecret String?
 
+  // Notification / API Settings
+  emailProvider      String?
+  emailApiKey        String?
+  emailFromAddress   String?
+  twilioAccountSid   String?
+  twilioAuthToken    String?
+  twilioSmsNumber    String?
+  twilioWhatsappNumber String?
+
   ownerId   String   @unique
   owner     User     @relation("GymOwner", fields: [ownerId], references: [id])
 

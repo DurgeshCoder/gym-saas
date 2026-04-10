@@ -39,6 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [gymName, setGymName] = useState<string | null>(null);
+  const [gymLogo, setGymLogo] = useState<string | null>(null);
 
   const role: string = (session?.user as any)?.role || "MEMBER";
   const gymId: string | null = (session?.user as any)?.gymId || null;
@@ -50,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.name) setGymName(data.name);
+          if (data?.logo) setGymLogo(data.logo);
         })
         .catch(() => { });
     }
@@ -117,6 +119,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   } else if (gymName) {
     brandName = gymName;
     brandSub = role.replace("_", " ");
+    if (gymLogo) {
+      brandIcon = <img src={gymLogo} alt={gymName} className="w-7 h-7 rounded-sm object-cover" />;
+    }
   }
 
   return (

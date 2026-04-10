@@ -17,7 +17,7 @@ import {
   Phone,
   Clock,
 } from "lucide-react";
-import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/components/shared";
+import { DataTable, SearchFilterBar, type Column, type FilterConfig, SearchableSelect } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ interface MemberOption {
   id: string;
   name: string;
   email: string;
+  profilePhoto?: string | null;
 }
 
 interface PlanOption {
@@ -485,16 +486,17 @@ export default function OwnerSubscriptionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Select Member</label>
-              <Select required value={createData.userId} onValueChange={(val) => setCreateData({ ...createData, userId: val || "" })}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="— Choose a member —" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.filter((m) => m.id).map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.name} ({m.email})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={members.map((m) => ({
+                  value: m.id,
+                  label: m.name,
+                  sublabel: m.email,
+                  photo: m.profilePhoto,
+                }))}
+                value={createData.userId}
+                onChange={(val) => setCreateData({ ...createData, userId: val || "" })}
+                placeholder="— Search and select a member —"
+              />
             </div>
 
             <div>

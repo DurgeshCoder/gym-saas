@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/shared";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface PaymentRecord {
@@ -39,6 +40,7 @@ interface UserOption {
   id: string;
   name: string;
   email: string;
+  profilePhoto?: string | null;
   subscriptions?: Array<{ id: string; active: boolean; plan: { name: string; price: number } }>;
 }
 
@@ -376,18 +378,17 @@ export default function OwnerPaymentsPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Member</label>
-              <Select required value={createData.userId} onValueChange={(val) => setCreateData({ ...createData, userId: val || "", subscriptionId: "" })}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="— Select a member —" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map(u => (
-                    <SelectItem key={u.id} value={u.id}>
-                      {u.name} ({u.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={users.map((u) => ({
+                  value: u.id,
+                  label: u.name,
+                  sublabel: u.email,
+                  photo: u.profilePhoto,
+                }))}
+                value={createData.userId}
+                onChange={(val) => setCreateData({ ...createData, userId: val || "", subscriptionId: "" })}
+                placeholder="— Search and select a member —"
+              />
             </div>
 
             {createData.userId && (

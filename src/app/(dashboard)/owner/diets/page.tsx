@@ -5,9 +5,9 @@ import { Plus, Utensils, UserPlus } from "lucide-react";
 import { DataTable, type Column, SearchFilterBar } from "@/components/shared";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/shared";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -156,7 +156,7 @@ export default function OwnerDietsPage() {
 }
 
 function AssignModal({ planId, onClose, onSuccess }: { planId: string, onClose: () => void, onSuccess: () => void }) {
-    const [users, setUsers] = useState<{ id: string; name: string; email: string }[]>([]);
+    const [users, setUsers] = useState<{ id: string; name: string; email: string; profilePhoto?: string | null; }[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [userId, setUserId] = useState("");
     const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
@@ -199,18 +199,17 @@ function AssignModal({ planId, onClose, onSuccess }: { planId: string, onClose: 
                 <form onSubmit={handleAssign} className="p-8 space-y-5 pt-4">
                     <div>
                         <label className="block text-sm font-medium text-foreground mb-1">Member</label>
-                        <Select required value={userId} onValueChange={(val) => setUserId(val || "")}>
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="— Select a member —" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {users.map(u => (
-                                    <SelectItem key={u.id} value={u.id}>
-                                        {u.name} ({u.email})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                            options={users.map((u) => ({
+                                value: u.id,
+                                label: u.name,
+                                sublabel: u.email,
+                                photo: u.profilePhoto,
+                            }))}
+                            value={userId}
+                            onChange={(val) => setUserId(val || "")}
+                            placeholder="— Search and select a member —"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-foreground mb-1">Start Date</label>

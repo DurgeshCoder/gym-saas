@@ -120,8 +120,12 @@ export default async function OwnerDashboardPage() {
               
               return (
                 <div key={member.id} className="flex items-center gap-4 p-3 hover:bg-muted rounded-lg transition-colors cursor-pointer">
-                  <div className="w-10 h-10 rounded-full bg-secondary border-2 border-background shadow-sm flex items-center justify-center font-bold text-muted-foreground uppercase">
-                    {member.name.substring(0, 2)}
+                  <div className="w-10 h-10 rounded-full bg-secondary border-2 border-background shadow-sm overflow-hidden flex items-center justify-center font-bold text-muted-foreground uppercase flex-shrink-0">
+                    {member.profilePhoto ? (
+                      <img src={member.profilePhoto} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      member.name.substring(0, 2)
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-foreground">{member.name}</p>

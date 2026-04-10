@@ -59,6 +59,7 @@ export async function GET(req: Request) {
           name: true,
           email: true,
           role: true,
+          profilePhoto: true,
           active: true,
           createdAt: true,
         },

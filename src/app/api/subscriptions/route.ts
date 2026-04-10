@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       prisma.subscription.findMany({
         where,
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, email: true, profilePhoto: true } },
           plan: { select: { id: true, name: true, price: true, duration: true } },
         },
         orderBy,

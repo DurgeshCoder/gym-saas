@@ -65,6 +65,7 @@ model User {
   name      String
   email     String   @unique
   password  String
+  profilePhoto String?
   role      Role     @default(MEMBER)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())

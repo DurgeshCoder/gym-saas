@@ -33,7 +33,7 @@ interface SubRecord {
   autoRenew: boolean;
   active: boolean;
   createdAt: string;
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string; email: string; profilePhoto?: string | null };
   plan: { id: string; name: string; price: number; duration: number };
 }
 
@@ -335,8 +335,12 @@ export default function OwnerSubscriptionsPage() {
       header: "Member",
       render: (s) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold shadow-sm">
-            {s.user.name.charAt(0)}
+          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold shadow-sm overflow-hidden shrink-0">
+            {s.user.profilePhoto ? (
+              <img src={s.user.profilePhoto} alt={s.user.name} className="w-full h-full object-cover" />
+            ) : (
+              s.user.name.charAt(0)
+            )}
           </div>
           <div>
             <p className="font-semibold text-slate-900 dark:text-white">{s.user.name}</p>

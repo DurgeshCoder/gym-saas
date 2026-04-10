@@ -25,13 +25,13 @@ interface ExpiringSub {
   startDate: string;
   endDate: string;
   active: boolean;
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string; email: string; profilePhoto?: string | null };
   plan: { id: string; name: string };
 }
 
 interface LogEntry {
   id: string;
-  user: { name: string; email: string };
+  user: { name: string; email: string; profilePhoto?: string | null };
   channel: string;
   message: string;
   sentAt: string;
@@ -140,8 +140,12 @@ export default function RemindersPage() {
       header: "Member",
       render: (s) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400 flex items-center justify-center font-bold shadow-sm">
-            {s.user.name.charAt(0)}
+          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400 flex items-center justify-center font-bold shadow-sm overflow-hidden shrink-0">
+            {s.user.profilePhoto ? (
+              <img src={s.user.profilePhoto} alt={s.user.name} className="w-full h-full object-cover" />
+            ) : (
+              s.user.name.charAt(0)
+            )}
           </div>
           <div>
             <p className="font-semibold text-slate-900 dark:text-white">{s.user.name}</p>
@@ -213,9 +217,18 @@ export default function RemindersPage() {
       key: "member",
       header: "Member",
       render: (s) => (
-        <div>
-          <p className="font-semibold text-slate-900 dark:text-white">{s.user.name}</p>
-          <p className="text-slate-500 text-xs mt-0.5">{s.user.email}</p>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold shadow-sm overflow-hidden shrink-0 text-xs">
+            {s.user.profilePhoto ? (
+              <img src={s.user.profilePhoto} alt={s.user.name} className="w-full h-full object-cover" />
+            ) : (
+              s.user.name.charAt(0)
+            )}
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900 dark:text-white">{s.user.name}</p>
+            <p className="text-slate-500 text-xs mt-0.5">{s.user.email}</p>
+          </div>
         </div>
       ),
     },

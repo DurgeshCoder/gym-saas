@@ -33,7 +33,7 @@ export async function GET(req: Request) {
         },
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, profilePhoto: true } },
         plan: { select: { id: true, name: true } },
       },
       orderBy: { endDate: "asc" },

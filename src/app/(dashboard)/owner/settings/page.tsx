@@ -232,6 +232,48 @@ export default function OwnerSettingsPage() {
     fetchSettings();
   }, []);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "gym" | "user") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024) {
+      toast.error("Image size must be strictly less than 100KB.");
+      return;
+    }
+
+    const isSquare = await new Promise<boolean>((resolve) => {
+      const img = new globalThis.Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => resolve(img.width === img.height);
+    });
+
+    if (!isSquare) {
+      toast.error("Image must be a perfect square (1:1 ratio). Please crop it first.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", type);
+
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (res.ok) {
+        const data = await res.json();
+        setFormData(prev => ({ ...prev, logo: data.url }));
+        toast.success("Logo uploaded successfully!");
+      } else {
+        const err = await res.json();
+        toast.error(err.message || "Failed to upload image.");
+      }
+    } catch {
+      toast.error("Error connecting to upload service.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   /* ─── Save ─── */
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -424,25 +466,40 @@ export default function OwnerSettingsPage() {
                     <Separator />
 
                     <div>
-                      <label className="block text-sm font-semibold text-foreground mb-1.5">Logo URL</label>
-                      <div className="flex gap-4 items-start">
-                        <Input
-                          type="text"
-                          value={formData.logo}
-                          onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                          placeholder="https://your-cdn.com/logo.png"
-                          className="h-11 flex-1"
-                        />
-                        <div className="w-16 h-16 rounded-xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden shrink-0 transition-all hover:border-primary/40">
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">Gym Logo</label>
+                      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <div className="w-20 h-20 rounded-xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden shrink-0">
                           {formData.logo ? (
-                            <img src={formData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
+                            <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-muted-foreground/50" />
                           )}
                         </div>
+                        <div className="flex-1 space-y-3">
+                          <label className="relative cursor-pointer w-full inline-flex items-center justify-center px-4 py-2 border border-border shadow-sm text-sm font-medium rounded-md text-foreground bg-secondary hover:bg-secondary/80 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary transition-colors">
+                            <span>Upload a new image</span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, "gym")}
+                              disabled={saving}
+                            />
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Or specify URL:</span>
+                            <Input
+                              type="text"
+                              value={formData.logo}
+                              onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                              placeholder="https://..."
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1.5">
-                        Paste a direct image URL. Recommended size: 256×256px or higher.
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        Must be a perfect square, &lt; 100KB, max 500x500px.
                       </p>
                     </div>
 

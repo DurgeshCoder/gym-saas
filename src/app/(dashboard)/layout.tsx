@@ -91,6 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
     { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
     { name: "Payments", href: "/member/payments", icon: Receipt },
+    { name: "My Profile", href: "/member/profile", icon: Users },
   ];
 
   const superAdminLinks = [
@@ -164,8 +165,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <SidebarFooter className="p-4 border-t border-border">
             <div className="flex items-center gap-3 px-2 py-2 mb-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                {session?.user?.name?.charAt(0) || "U"}
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden shrink-0">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt={session.user.name || "User"} className="w-full h-full object-cover" />
+                ) : (
+                  session?.user?.name?.charAt(0) || "U"
+                )}
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-semibold text-foreground truncate">

@@ -29,7 +29,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
-          gymId: user.gymId
+          gymId: user.gymId,
+          image: user.profilePhoto, // Maps to NextAuth session.user.image
         };
       }
     })
@@ -41,11 +42,14 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
         token.gymId = (user as any).gymId;
+        token.picture = user.image;
       }
       
       // Handle dynamic session updates
-      if (trigger === "update" && session?.gymId) {
-        token.gymId = session.gymId;
+      if (trigger === "update") {
+        if (session?.gymId) token.gymId = session.gymId;
+        if (session?.picture) token.picture = session.picture;
+        if (session?.name) token.name = session.name;
       }
       
       return token;
@@ -55,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).gymId = token.gymId;
+        session.user.image = token.picture as string | null | undefined;
       }
       return session;
     }

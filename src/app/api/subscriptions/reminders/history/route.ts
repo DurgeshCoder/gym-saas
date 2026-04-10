@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const logs = await prisma.notificationLog.findMany({
       where: { gymId },
       include: {
-        user: { select: { name: true, email: true } },
+        user: { select: { name: true, email: true, profilePhoto: true } },
       },
       orderBy: { sentAt: "desc" },
     });

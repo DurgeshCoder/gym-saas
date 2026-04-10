@@ -13,6 +13,7 @@ interface UserRecord {
   id: string;
   name: string;
   email: string;
+  profilePhoto?: string | null;
   role: string;
   active: boolean;
   createdAt: string;
@@ -280,8 +281,12 @@ export default function OwnerUsersPage() {
       header: "User Details",
       render: (u) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold shadow-sm">
-            {u.name.charAt(0)}
+          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold shadow-sm overflow-hidden shrink-0">
+            {u.profilePhoto ? (
+              <img src={u.profilePhoto} alt={u.name} className="w-full h-full object-cover" />
+            ) : (
+              u.name.charAt(0)
+            )}
           </div>
           <div>
             <p className="font-semibold text-slate-900 dark:text-white">{u.name}</p>

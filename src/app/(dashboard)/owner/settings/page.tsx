@@ -1,3 +1,4 @@
+/* Gym Owner Settings — v2 */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -307,7 +308,7 @@ export default function OwnerSettingsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-28">
       {/* ═══ Page Header ═══ */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-muted/30 p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-linear-to-br from-card via-card to-muted/30 p-6 sm:p-8">
         {/* Decorative circles */}
         <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-primary/5" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary/5" />
@@ -406,7 +407,7 @@ export default function OwnerSettingsPage() {
                           placeholder="https://your-cdn.com/logo.png"
                           className="h-11 flex-1"
                         />
-                        <div className="w-16 h-16 rounded-xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden flex-shrink-0 transition-all hover:border-primary/40">
+                        <div className="w-16 h-16 rounded-xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden shrink-0 transition-all hover:border-primary/40">
                           {formData.logo ? (
                             <img src={formData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
                           ) : (
@@ -638,7 +639,7 @@ export default function OwnerSettingsPage() {
                 <CardContent className="space-y-6">
                   {/* Security notice */}
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20">
-                    <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-foreground">Sensitive Credentials</p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
@@ -744,7 +745,7 @@ export default function OwnerSettingsPage() {
                 <CardContent>
                   {/* Info banner */}
                   <div className="flex items-start gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/60 mb-6">
-                    <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {hoursType === "full_day"
                         ? "Full Day mode sets one continuous operating window per day. Best for gyms that stay open without breaks."
@@ -769,7 +770,7 @@ export default function OwnerSettingsPage() {
                         >
                           <div className="flex items-center gap-3 p-3.5 sm:p-4">
                             {/* Day indicator */}
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black uppercase ${
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-xs font-black uppercase ${
                               dh.closed
                                 ? "bg-muted text-muted-foreground"
                                 : isWeekend
@@ -798,7 +799,7 @@ export default function OwnerSettingsPage() {
                             </div>
 
                             {/* Closed toggle */}
-                            <label className="relative inline-flex items-center cursor-pointer select-none flex-shrink-0">
+                            <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
                               <input
                                 type="checkbox"
                                 checked={!dh.closed}
@@ -849,13 +850,13 @@ export default function OwnerSettingsPage() {
                                         key={idx}
                                         className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/30 border border-border/50"
                                       >
-                                        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                        <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                                         <Input
                                           type="text"
                                           value={shift.name}
                                           onChange={(e) => updateShift(day, idx, { name: e.target.value })}
                                           placeholder="Shift name"
-                                          className="text-xs h-8 w-24 sm:w-28 min-w-0 flex-shrink-0 font-medium"
+                                          className="text-xs h-8 w-24 sm:w-28 min-w-0 shrink-0 font-medium"
                                         />
                                         <Input
                                           type="time"
@@ -863,7 +864,7 @@ export default function OwnerSettingsPage() {
                                           onChange={(e) => updateShift(day, idx, { open: e.target.value })}
                                           className="text-xs h-8 min-w-0 flex-1"
                                         />
-                                        <span className="text-muted-foreground text-[10px] flex-shrink-0">→</span>
+                                        <span className="text-muted-foreground text-[10px] shrink-0">→</span>
                                         <Input
                                           type="time"
                                           value={shift.close}
@@ -874,7 +875,7 @@ export default function OwnerSettingsPage() {
                                           type="button"
                                           onClick={() => removeShift(day, idx)}
                                           disabled={dh.shifts.length <= 1}
-                                          className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-20 disabled:cursor-not-allowed flex-shrink-0"
+                                          className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
                                           title="Remove shift"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />

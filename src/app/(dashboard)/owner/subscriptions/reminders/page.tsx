@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 
 interface ExpiringSub {
@@ -28,12 +29,23 @@ interface ExpiringSub {
   plan: { id: string; name: string };
 }
 
+interface LogEntry {
+  id: string;
+  user: { name: string; email: string };
+  channel: string;
+  message: string;
+  sentAt: string;
+}
+
 export default function RemindersPage() {
   const [subs, setSubs] = useState<ExpiringSub[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingLogs, setLoadingLogs] = useState(true);
 
   // Modals
   const [showReminderModal, setShowReminderModal] = useState<ExpiringSub | null>(null);
+  const [viewMessageLog, setViewMessageLog] = useState<LogEntry | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [channel, setChannel] = useState("WHATSAPP");
   const [message, setMessage] = useState("");
@@ -51,9 +63,23 @@ export default function RemindersPage() {
     }
   }, []);
 
+  const fetchLogs = useCallback(async () => {
+    setLoadingLogs(true);
+    try {
+      const res = await fetch(`/api/subscriptions/reminders/history`);
+      if (res.ok) {
+        const json = await res.json();
+        setLogs(json.data || []);
+      }
+    } finally {
+      setLoadingLogs(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchExpiring();
-  }, [fetchExpiring]);
+    fetchLogs();
+  }, [fetchExpiring, fetchLogs]);
 
   // Open modal and pre-fill message
   const openReminder = (s: ExpiringSub) => {
@@ -91,6 +117,7 @@ export default function RemindersPage() {
       if (res.ok) {
         toast.success("Reminder sent and logged successfully!");
         setShowReminderModal(null);
+        fetchLogs();
       } else {
         const err = await res.json();
         toast.error(err.message || "Failed to send reminder");
@@ -171,6 +198,52 @@ export default function RemindersPage() {
     },
   ];
 
+  const logColumns: Column<LogEntry>[] = [
+    {
+      key: "time",
+      header: "Sent At",
+      render: (s) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-sm text-foreground">{new Date(s.sentAt).toLocaleDateString()}</span>
+          <span className="text-xs text-muted-foreground">{new Date(s.sentAt).toLocaleTimeString()}</span>
+        </div>
+      ),
+    },
+    {
+      key: "member",
+      header: "Member",
+      render: (s) => (
+        <div>
+          <p className="font-semibold text-slate-900 dark:text-white">{s.user.name}</p>
+          <p className="text-slate-500 text-xs mt-0.5">{s.user.email}</p>
+        </div>
+      ),
+    },
+    {
+      key: "channel",
+      header: "Channel",
+      render: (s) => (
+        <span className="inline-flex py-1 px-3 border rounded-full text-xs font-semibold bg-muted text-muted-foreground">
+          {s.channel}
+        </span>
+      ),
+    },
+    {
+      key: "message",
+      header: "Message Snippet",
+      render: (s) => (
+        <button 
+          onClick={() => setViewMessageLog(s)}
+          className="text-left group focus:outline-none w-full"
+        >
+          <p className="text-xs text-muted-foreground line-clamp-2 max-w-sm group-hover:text-primary transition-colors cursor-pointer" title="Click to view full message">
+            {s.message}
+          </p>
+        </button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -186,21 +259,45 @@ export default function RemindersPage() {
         </div>
       </div>
 
-      {/* DataTable */}
-      <DataTable<ExpiringSub>
-        columns={columns}
-        data={subs}
-        loading={loading}
-        rowKey={(s) => s.id}
-        emptyIcon={<CheckCircle2 className="w-8 h-8 text-slate-400" />}
-        emptyTitle="No expiring subscriptions"
-        emptyDescription="All active subscriptions are well within their periods!"
-        currentPage={1}
-        totalPages={1}
-        totalItems={subs.length}
-        pageSize={100}
-        onPageChange={() => {}}
-      />
+      {/* DataTable Tabs */}
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="mb-6 grid w-full sm:w-[400px] grid-cols-2">
+          <TabsTrigger value="pending">Expiring Soon</TabsTrigger>
+          <TabsTrigger value="history">Sent History</TabsTrigger>
+        </TabsList>
+        <TabsContent value="pending" className="mt-0">
+          <DataTable<ExpiringSub>
+            columns={columns}
+            data={subs}
+            loading={loading}
+            rowKey={(s) => s.id}
+            emptyIcon={<CheckCircle2 className="w-8 h-8 text-slate-400" />}
+            emptyTitle="No expiring subscriptions"
+            emptyDescription="All active subscriptions are well within their periods!"
+            currentPage={1}
+            totalPages={1}
+            totalItems={subs.length}
+            pageSize={100}
+            onPageChange={() => {}}
+          />
+        </TabsContent>
+        <TabsContent value="history" className="mt-0">
+          <DataTable<LogEntry>
+            columns={logColumns}
+            data={logs}
+            loading={loadingLogs}
+            rowKey={(s) => s.id}
+            emptyIcon={<MessageSquare className="w-8 h-8 text-slate-400" />}
+            emptyTitle="No Reminders Sent"
+            emptyDescription="You haven't sent any manual reminders yet."
+            currentPage={1}
+            totalPages={1}
+            totalItems={logs.length}
+            pageSize={100}
+            onPageChange={() => {}}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* ── Send Reminder Modal ── */}
       <Dialog open={!!showReminderModal} onOpenChange={(open) => !open && setShowReminderModal(null)}>
@@ -250,6 +347,27 @@ export default function RemindersPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      {/* ── View Message Modal ── */}
+      <Dialog open={!!viewMessageLog} onOpenChange={(open) => !open && setViewMessageLog(null)}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MessageSquare className="w-5 h-5 text-primary" /> Full Message Text</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4 space-y-4">
+            <div className="bg-muted/30 p-4 rounded-xl border border-border text-sm whitespace-pre-wrap text-foreground font-medium max-h-[60vh] overflow-y-auto">
+              {viewMessageLog?.message}
+            </div>
+            <div className="flex gap-4 text-xs font-semibold text-muted-foreground px-1">
+              <span>Channel: <span className="text-foreground">{viewMessageLog?.channel}</span></span>
+              <span>•</span>
+              <span>Sent: <span className="text-foreground">{viewMessageLog ? new Date(viewMessageLog.sentAt).toLocaleString() : ""}</span></span>
+            </div>
+          </div>
+          <DialogFooter className="pt-2">
+            <Button variant="outline" onClick={() => setViewMessageLog(null)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

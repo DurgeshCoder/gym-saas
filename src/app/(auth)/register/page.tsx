@@ -69,14 +69,14 @@ export default function RegisterPage() {
           <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mb-4">
             <Dumbbell className="w-6 h-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">GymFlow</h1>
+          <h1 className="text-2xl font-bold text-foreground">FixHubX</h1>
           <p className="text-sm text-muted-foreground mt-1">Create your account</p>
         </div>
 
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Get started</CardTitle>
-            <CardDescription>Join GymFlow to manage your fitness journey</CardDescription>
+            <CardDescription>Join FixHubX to manage your fitness journey</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

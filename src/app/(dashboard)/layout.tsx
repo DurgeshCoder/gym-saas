@@ -127,8 +127,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider>
       <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
-        {/* Sidebar (Tablet/Desktop) */}
-        <Sidebar className="hidden md:flex border-r border-border collapse:hidden">
+        {/* Sidebar (Tablet/Desktop & Mobile Sheet) */}
+        <Sidebar className="border-r border-border">
           <SidebarHeader className="p-6 border-b border-border">
             <h1 className="text-xl font-bold flex items-center gap-2 text-primary truncate">
               {brandIcon}
@@ -198,9 +198,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="flex-1 w-full h-full overflow-y-auto min-w-0 bg-background pb-20 md:pb-0 relative">
           <header className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-md border-b flex items-center justify-between px-4 sm:px-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="hidden md:block">
-                <SidebarTrigger />
-              </div>
+              <SidebarTrigger />
               <div className="md:hidden flex items-center gap-2 text-primary font-bold">
                 {brandIcon}
               </div>

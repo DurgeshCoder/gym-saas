@@ -127,8 +127,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider>
       <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar className="border-r border-border">
+        {/* Sidebar (Tablet/Desktop) */}
+        <Sidebar className="hidden md:flex border-r border-border collapse:hidden">
           <SidebarHeader className="p-6 border-b border-border">
             <h1 className="text-xl font-bold flex items-center gap-2 text-primary truncate">
               {brandIcon}
@@ -152,7 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <SidebarMenuButton
                           isActive={isActive}
                           tooltip={link.name}
-                          className="font-medium h-12"
+                          className={`font-medium h-12 ${isActive ? "bg-primary/10 text-primary" : ""}`}
                           render={
                             <Link href={link.href} className="flex items-center gap-3">
                               <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
@@ -195,18 +195,62 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Sidebar>
 
         {/* Main Content Area */}
-        <main className="flex-1 w-full overflow-y-auto min-w-0 bg-background">
-          <header className="h-16 bg-background border-b flex items-center justify-between px-4 sm:px-8 shadow-sm">
+        <main className="flex-1 w-full h-full overflow-y-auto min-w-0 bg-background pb-20 md:pb-0 relative">
+          <header className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-md border-b flex items-center justify-between px-4 sm:px-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h2 className="text-lg font-semibold hidden sm:flex">
-                {links.find((l) => l.href === pathname)?.name || "Dashboard Overview"}
+              <div className="hidden md:block">
+                <SidebarTrigger />
+              </div>
+              <div className="md:hidden flex items-center gap-2 text-primary font-bold">
+                {brandIcon}
+              </div>
+              <h2 className="text-lg font-semibold flex">
+                {links.find((l) => l.href === pathname)?.name || "Dashboard"}
               </h2>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+            </div>
           </header>
-          <div className="p-4 sm:p-8">{children}</div>
+          
+          <div className="p-4 sm:p-8 md:max-w-7xl md:mx-auto space-y-6">
+            {children}
+          </div>
         </main>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border z-50 px-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+          <div className="flex justify-around items-center h-16">
+            {/* Show top 4-5 priority links for mobile based on role to prevent overcrowding */}
+            {links.filter(link => {
+              // Prioritize key tabs for bottom nav as requested
+              const priorityNames = ['Dashboard', 'Members', 'My Members', 'Users & Staff', 'Payments', 'My Profile', 'Gym Settings', 'All Gyms'];
+              return priorityNames.includes(link.name) || link.name.includes("Dashboard");
+            }).slice(0, 5).map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "relative flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-200",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-xl"
+                  )}
+                >
+                  <Icon className={cn("w-5 h-5", isActive ? "scale-110" : "scale-100")} />
+                  <span className="text-[10px] font-medium truncate max-w-[64px]">
+                    {link.name.replace("My ", "").replace("Gym ", "").replace(" & Staff", "")}
+                  </span>
+                  {isActive && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </SidebarProvider>
   );

@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import LandingPage from "@/components/landing-page";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
-    redirect("/login");
+    return <LandingPage isLoggedIn={false} />;
   }
 
   const role: string = (session.user as any).role;
@@ -21,6 +22,6 @@ export default async function Home() {
     case "MEMBER":
       redirect("/member");
     default:
-      redirect("/login");
+      return <LandingPage isLoggedIn={true} />;
   }
 }

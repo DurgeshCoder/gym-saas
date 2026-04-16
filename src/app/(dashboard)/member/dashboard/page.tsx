@@ -39,9 +39,9 @@ export default async function MemberDashboardPage() {
         <p className="text-muted-foreground">Here is your quick overview.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex md:grid overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 gap-4 md:gap-6 md:grid-cols-3 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none">
         {/* Subscription Summary Card */}
-        <Card className="flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
+        <Card className="min-w-[280px] md:min-w-0 shrink-0 snap-center flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110">
             <CreditCard className="w-24 h-24" />
           </div>
@@ -72,7 +72,7 @@ export default async function MemberDashboardPage() {
         </Card>
 
         {/* Workout Plan Summary Card */}
-        <Card className="flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
+        <Card className="min-w-[280px] md:min-w-0 shrink-0 snap-center flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110">
             <Dumbbell className="w-24 h-24" />
           </div>
@@ -103,7 +103,7 @@ export default async function MemberDashboardPage() {
         </Card>
 
         {/* Diet Plan Summary Card */}
-        <Card className="flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
+        <Card className="min-w-[280px] md:min-w-0 shrink-0 snap-center flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110">
             <Utensils className="w-24 h-24" />
           </div>

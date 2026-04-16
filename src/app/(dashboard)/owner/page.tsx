@@ -92,9 +92,9 @@ export default async function OwnerDashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex md:grid overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none">
         {stats.map((stat) => (
-          <Card key={stat.name} className="hover:shadow-md transition-shadow">
+          <Card key={stat.name} className="min-w-[260px] md:min-w-0 shrink-0 snap-center hover:shadow-md transition-shadow">
             <CardContent className="p-6 flex items-center gap-4">
               <div className={`p-4 rounded-xl ${stat.bg} dark:bg-opacity-20`}>
                 <stat.icon className={`w-8 h-8 ${stat.color} dark:brightness-110`} />

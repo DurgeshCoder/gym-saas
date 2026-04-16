@@ -36,8 +36,18 @@ export async function GET(req: Request) {
         ],
       };
     }
-    if (statusFilter === "active") where.active = true;
-    if (statusFilter === "expired") where.active = false;
+    const now = new Date();
+    
+    if (statusFilter === "active") {
+      where.active = true;
+      where.endDate = { gte: now };
+    }
+    if (statusFilter === "expired") {
+      where.OR = [
+        { active: false },
+        { endDate: { lt: now } },
+      ];
+    }
     if (planFilter) where.planId = planFilter;
 
     const orderBy: any = {};

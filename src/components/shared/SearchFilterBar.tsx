@@ -103,7 +103,11 @@ export function SearchFilterBar({
                 onValueChange={(val) => onFilterChange?.(filter.key, (val === "all" || val === null) ? "" : val)}
               >
                 <SelectTrigger className="h-11 border-border/60 bg-background hover:bg-muted/30 transition-colors shadow-sm rounded-xl font-medium w-full sm:w-fit min-w-[140px]">
-                  <SelectValue placeholder={filter.label} />
+                  <SelectValue placeholder={filter.label}>
+                    {filterValues[filter.key] && filterValues[filter.key] !== "all"
+                      ? filter.options.find((o) => String(o.value) === String(filterValues[filter.key]))?.label || filter.label
+                      : filter.label}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   <SelectItem value="all" className="font-semibold">{filter.label}</SelectItem>

@@ -61,13 +61,13 @@ export function SearchFilterBar({
         <div className="flex flex-col gap-1.5 w-full xl:max-w-md flex-shrink-0">
           <label className="text-xs font-bold text-muted-foreground ml-1 uppercase tracking-wider opacity-80">Search</label>
           <div className="relative group w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
             <Input
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
-              className="pl-10 bg-background shadow-sm border-border/60 focus-visible:ring-primary/20 h-11 transition-all rounded-xl w-full"
+              className="pl-10 md:pl-10 bg-background shadow-sm border-border/60 focus-visible:ring-primary/20 h-11 transition-all rounded-xl w-full"
             />
           </div>
         </div>

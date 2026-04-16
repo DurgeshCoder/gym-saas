@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, email, password } = result.data;
+    const { name, email, password, gymName, requirements } = result.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -33,23 +33,43 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Default to MEMBER for public registration
-    const userRole = "MEMBER";
+    // Default to GYM_OWNER for public registration
+    const userRole = "GYM_OWNER";
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: userRole,
-      },
+    // Create user and gym in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: userRole,
+          ownedGym: {
+            create: {
+              name: gymName,
+              description: requirements,
+            }
+          }
+        },
+        include: {
+          ownedGym: true
+        }
+      });
+      
+      if (newUser.ownedGym) {
+        await tx.user.update({
+          where: { id: newUser.id },
+          data: { gymId: newUser.ownedGym.id }
+        });
+      }
+      
+      return newUser;
     });
 
     // We do NOT return the password hash
     return NextResponse.json(
       { 
-        message: "User registered successfully", 
+        message: "Gym Owner registered successfully", 
         user: { id: user.id, email: user.email, name: user.name, role: user.role } 
       },
       { status: 201 }

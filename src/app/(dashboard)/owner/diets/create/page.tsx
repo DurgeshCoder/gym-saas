@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
     Form,
@@ -83,130 +84,168 @@ export default function CreateDietPage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
-            <div className="flex items-center justify-between border-b pb-6">
+        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+            {/* Minimal & Classic Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/50">
                 <div className="flex items-center gap-4">
                     <Link
                         href="/owner/diets"
-                        className={cn(buttonVariants({ variant: "outline", size: "icon" }), "rounded-full")}
+                        className={cn(buttonVariants({ variant: "outline", size: "icon" }), "rounded-md h-9 w-9 border-border bg-transparent shadow-sm")}
                     >
                         <ArrowLeft className="w-4 h-4" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">New Diet Plan</h1>
-                        <p className="text-sm text-muted-foreground italic">Build a custom nutrition schedule for your members.</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Design Diet Plan</h1>
+                        <p className="text-sm font-normal text-muted-foreground mt-1">Structurally build a custom nutrition protocol for your members.</p>
                     </div>
                 </div>
-                <Button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting} className="px-8 font-bold">
+                <Button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting} size="sm" className="px-6 h-9 font-medium shadow-sm transition-all active:scale-95">
                     <Save className="w-4 h-4 mr-2" />
-                    {isSubmitting ? "Creating..." : "Save Plan"}
+                    {isSubmitting ? "Generating..." : "Save Plan"}
                 </Button>
             </div>
 
             <Form {...form}>
-                <form className="space-y-10">
-                    <Card className="shadow-none border-border">
-                        <CardHeader className="border-b bg-muted/30 dark:bg-muted/10">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Info className="w-4 h-4 text-muted-foreground" />
-                                Base Plan Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2">
-                                    <FormField
-                                        control={control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-semibold">Plan Name</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="e.g. High Protein Keto" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <FormField
-                                        control={control}
-                                        name="description"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-semibold">Description (Optional)</FormLabel>
-                                                <FormControl>
-                                                    <Textarea {...field} rows={3} placeholder="Briefly describe the objective of this diet..." className="resize-none" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <FormField
-                                    control={control}
-                                    name="goal"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-sm font-semibold">Primary Goal</FormLabel>
-                                            <Select value={field.value} onValueChange={field.onChange}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select goal" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="WEIGHT_LOSS">Weight Loss</SelectItem>
-                                                    <SelectItem value="MUSCLE_GAIN">Muscle Gain</SelectItem>
-                                                    <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
-                                <Utensils className="w-5 h-5 text-emerald-600" />
-                                Meals
-                            </h2>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => appendMeal({
-                                    mealType: "LUNCH",
-                                    time: "12:00 PM",
-                                    foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" }]
-                                })}
-                                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold"
+                <form className="pb-12">
+                    <Tabs defaultValue="foundation" className="w-full">
+                        <TabsList className="flex w-full justify-start h-12 bg-transparent p-0 mb-6 rounded-none border-b border-border/60 gap-6">
+                            <TabsTrigger 
+                                value="foundation" 
+                                className="relative rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-2 font-medium text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground text-sm transition-colors"
                             >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Add Meal
-                            </Button>
-                        </div>
+                                Base Plan Details
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="meals" 
+                                className="relative rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-2 font-medium text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground text-sm transition-colors"
+                            >
+                                Daily Routine
+                            </TabsTrigger>
+                        </TabsList>
 
-                        <Separator />
+                        <TabsContent value="foundation" className="mt-6 space-y-6 animate-in fade-in-50 duration-500">
+                            {/* Section 1: Basic Information */}
+                            <Card className="shadow-sm border border-border/50 bg-card rounded-xl overflow-hidden">
+                                <CardHeader className="border-b border-border/50 py-5 px-6">
+                                    <CardTitle className="text-xl font-semibold text-foreground tracking-tight">Core Foundation</CardTitle>
+                                    <CardDescription className="text-sm mt-1">High-level parameters for your custom diet plan</CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="md:col-span-2">
+                                            <FormField
+                                                control={control}
+                                                name="name"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-sm font-medium">Plan Directive Name</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="e.g. High Protein Keto" className="h-10 text-sm shadow-sm rounded-md transition-all border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
 
-                        <div className="space-y-8">
-                            {mealFields.map((mealItem, mealIndex) => (
-                                <MealItem
-                                    key={mealItem.id}
-                                    mealIndex={mealIndex}
-                                    control={control}
-                                    removeMeal={() => removeMeal(mealIndex)}
-                                    totalMeals={mealFields.length}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                                        <div className="md:col-span-2">
+                                            <FormField
+                                                control={control}
+                                                name="description"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-sm font-medium">Strategic Overview (Optional)</FormLabel>
+                                                        <FormControl>
+                                                            <Textarea {...field} rows={3} placeholder="Provide a summary of what this diet aims to achieve..." className="resize-none text-sm shadow-sm rounded-md transition-all border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <FormField
+                                            control={control}
+                                            name="goal"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">Primary Objective</FormLabel>
+                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-10 shadow-sm rounded-md border-border bg-background">
+                                                                <SelectValue placeholder="Select objective" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-md">
+                                                            <SelectItem value="WEIGHT_LOSS" className="text-sm">Weight Loss / Cut</SelectItem>
+                                                            <SelectItem value="MUSCLE_GAIN" className="text-sm">Muscle Gain / Bulk</SelectItem>
+                                                            <SelectItem value="MAINTENANCE" className="text-sm">Maintenance</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        
+                                        <FormField
+                                            control={control}
+                                            name="totalCalories"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">Target Calories (Daily)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} min={0} className="h-10 shadow-sm rounded-md border-border bg-background" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="meals" className="mt-6 animate-in fade-in-50 duration-500">
+                            {/* Section 2: Meals Configuration */}
+                            <div className="space-y-6">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-2">
+                                    <div>
+                                        <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+                                            <Utensils className="w-5 h-5 text-muted-foreground" />
+                                            Daily Routine
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground mt-1">Plan out the daily meals for this diet program.</p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => appendMeal({
+                                            mealType: "LUNCH",
+                                            time: "12:00 PM",
+                                            foodItems: [{ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" }]
+                                        })}
+                                        className="h-9 px-4 font-medium transition-all shadow-sm"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Add Next Meal Phase
+                                    </Button>
+                                </div>
+
+                                <div className="space-y-6 mt-4">
+                                    {mealFields.map((mealItem, mealIndex) => (
+                                        <MealItem
+                                            key={mealItem.id}
+                                            mealIndex={mealIndex}
+                                            control={control}
+                                            removeMeal={() => removeMeal(mealIndex)}
+                                            totalMeals={mealFields.length}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </form>
             </Form>
         </div>
@@ -220,40 +259,43 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
     });
 
     return (
-        <Card className="border-border overflow-hidden shadow-sm bg-card">
-            <CardHeader className="bg-muted/50 dark:bg-muted/20 border-b flex flex-row items-center justify-between py-4">
+        <Card className="shadow-sm border border-border/50 bg-card rounded-xl overflow-hidden mb-6">
+            <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between py-5 px-6">
                 <div className="flex items-center gap-3">
-                    <div className="bg-primary text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm">
-                        {mealIndex + 1}
+                    <div className="bg-primary text-primary-foreground shadow-sm px-3 py-1.5 h-9 rounded-md flex items-center justify-center font-semibold text-sm whitespace-nowrap min-w-[3.5rem] shrink-0">
+                        Meal {mealIndex + 1}
                     </div>
-                    <CardTitle className="text-base font-bold">Meal Details</CardTitle>
+                    <div>
+                        <CardTitle className="text-lg font-semibold tracking-tight text-foreground">Meal Phase Details</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-0.5">Configure timing and nutritional structure</p>
+                    </div>
                 </div>
                 {totalMeals > 1 && (
-                    <Button type="button" variant="ghost" size="sm" onClick={removeMeal} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Remove Meal
+                    <Button type="button" variant="ghost" size="sm" onClick={removeMeal} className="text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/10 h-8 px-3 rounded-md transition-colors text-xs font-medium">
+                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                        Remove Phase
                     </Button>
                 )}
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardContent className="p-6 space-y-6 bg-background/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                         control={control}
                         name={`meals.${mealIndex}.mealType`}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Type</FormLabel>
+                                <FormLabel className="text-sm font-medium">Meal Type</FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange}>
                                     <FormControl>
-                                        <SelectTrigger className="bg-background">
+                                        <SelectTrigger className="h-10 text-sm shadow-sm rounded-md border-border bg-background">
                                             <SelectValue placeholder="Select type" />
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="BREAKFAST">Breakfast</SelectItem>
-                                        <SelectItem value="LUNCH">Lunch</SelectItem>
-                                        <SelectItem value="DINNER">Dinner</SelectItem>
-                                        <SelectItem value="SNACK">Snack</SelectItem>
+                                    <SelectContent className="rounded-md">
+                                        <SelectItem value="BREAKFAST" className="text-sm">Breakfast</SelectItem>
+                                        <SelectItem value="LUNCH" className="text-sm">Lunch</SelectItem>
+                                        <SelectItem value="DINNER" className="text-sm">Dinner</SelectItem>
+                                        <SelectItem value="SNACK" className="text-sm">Snack</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -265,9 +307,9 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                         name={`meals.${mealIndex}.time`}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Time (Optional)</FormLabel>
+                                <FormLabel className="text-sm font-medium">Target Time (Optional)</FormLabel>
                                 <FormControl>
-                                    <Input {...field} placeholder="e.g. 08:00 AM" className="bg-background" />
+                                    <Input {...field} placeholder="e.g. 08:00 AM" className="h-10 text-sm shadow-sm rounded-md border-border bg-background flex-1" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -275,154 +317,187 @@ function MealItem({ mealIndex, control, removeMeal, totalMeals }: any) {
                     />
                 </div>
 
-                <div className="space-y-4 pt-4">
-                    <div className="flex items-center justify-between border-b pb-2">
-                        <h4 className="text-sm font-bold flex items-center gap-2">
+                <div className="pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center gap-2">
                             <Utensils className="w-4 h-4 text-muted-foreground" />
-                            Food Items
-                        </h4>
+                            <h4 className="text-sm font-semibold tracking-tight text-foreground">
+                                Food Inventory
+                            </h4>
+                        </div>
                         <Button
                             type="button"
                             variant="secondary"
                             size="sm"
                             onClick={() => appendFood({ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" })}
-                            className="h-8 text-xs font-bold"
+                            className="h-8 px-3 text-xs font-medium shadow-sm rounded-md transition-all"
                         >
-                            <Plus className="w-3 h-3 mr-1" /> Add Food
+                            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Food
                         </Button>
                     </div>
 
                     <div className="space-y-4">
                         {foodFields.map((foodItem, foodIndex) => (
-                            <div key={foodItem.id} className="p-4 border border-border rounded-xl bg-muted/20 dark:bg-muted/5 space-y-4 relative group">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeFood(foodIndex)}
-                                    className="absolute top-2 right-2 h-8 w-8 text-muted-foreground/50 hover:text-destructive rounded-full"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+                            <div key={foodItem.id} className="p-5 border border-border/60 rounded-xl bg-card space-y-5 relative group transition-all hover:border-border hover:shadow-sm">
+                                {/* Delete Button - Reveals on hover */}
+                                <div className="absolute top-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeFood(foodIndex)}
+                                        className="h-8 w-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-md"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 pr-6">
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.name`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} placeholder="e.g. Oats" className="bg-background h-8 text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.quantity`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Qty</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.unit`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Unit</FormLabel>
-                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                                    <div className="xl:col-span-4 flex items-start gap-3">
+                                        <div className="mt-7 w-6 h-6 rounded-md bg-muted text-xs font-medium flex items-center justify-center text-muted-foreground shrink-0 border border-border/50">
+                                            {foodIndex + 1}
+                                        </div>
+                                        <div className="flex-1 w-full">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.name`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Food Name</FormLabel>
                                                         <FormControl>
-                                                            <SelectTrigger className="bg-background h-8 text-[12px] px-2">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
+                                                            <Input {...field} placeholder="e.g. Rolled Oats" className="h-9 text-sm shadow-sm rounded-md border-border bg-background" />
                                                         </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value="g">grams</SelectItem>
-                                                            <SelectItem value="serving">serving</SelectItem>
-                                                            <SelectItem value="ml">ml</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.protein`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Prot (g)</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.carbs`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Carbs (g)</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.fats`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Fats (g)</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <FormField
-                                            control={control}
-                                            name={`meals.${mealIndex}.foodItems.${foodIndex}.calories`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Cals</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-background h-8 text-sm font-bold text-emerald-600" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+
+                                    <div className="xl:col-span-8 grid grid-cols-6 gap-3 lg:gap-4 pr-0 xl:pr-6">
+                                        <div className="col-span-3 sm:col-span-2">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.quantity`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Qty</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="h-9 text-sm shadow-sm rounded-md border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="col-span-3 sm:col-span-2">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.unit`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Unit</FormLabel>
+                                                        <Select value={field.value} onValueChange={field.onChange}>
+                                                            <FormControl>
+                                                                <SelectTrigger className="h-9 text-sm shadow-sm rounded-md border-border bg-background px-2">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent className="rounded-md">
+                                                                <SelectItem value="g" className="text-sm">g</SelectItem>
+                                                                <SelectItem value="serving" className="text-sm">srv</SelectItem>
+                                                                <SelectItem value="ml" className="text-sm">ml</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="col-span-2 sm:col-span-2">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.calories`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-400">Calories</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="h-9 text-sm shadow-sm rounded-md border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-900/10 font-semibold" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        {/* Macros */}
+                                        <div className="col-span-2 pt-2 border-t border-border/50 sm:border-t-0 sm:pt-0">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.protein`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Prot (g)</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="h-9 text-sm shadow-sm rounded-md border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="col-span-2 pt-2 border-t border-border/50 sm:border-t-0 sm:pt-0">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.carbs`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Carbs (g)</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="h-9 text-sm shadow-sm rounded-md border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="col-span-2 pt-2 border-t border-border/50 sm:border-t-0 sm:pt-0">
+                                            <FormField
+                                                control={control}
+                                                name={`meals.${mealIndex}.foodItems.${foodIndex}.fats`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-xs font-medium text-muted-foreground">Fats (g)</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="h-9 text-sm shadow-sm rounded-md border-border bg-background" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         ))}
+
+                        {foodFields.length === 0 && (
+                            <div className="text-center py-10 border border-dashed rounded-xl border-border bg-muted/10 transition-colors">
+                                <div className="w-10 h-10 rounded-full bg-secondary text-primary flex items-center justify-center mx-auto mb-3 shadow-sm border border-border/50">
+                                  <Utensils className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                <p className="font-medium text-sm text-foreground">No Foods Configured</p>
+                                <p className="text-xs text-muted-foreground mt-1 mb-4">You need at least one food item to construct a meal.</p>
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  onClick={() => appendFood({ name: "", protein: 0, carbs: 0, fats: 0, calories: 0, quantity: 1, unit: "serving" })}
+                                  className="h-8 px-4 rounded-md text-xs font-medium shadow-sm"
+                                >
+                                  Instantiate Food Item
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardContent>

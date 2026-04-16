@@ -73,7 +73,7 @@ export default function LandingPage({ isLoggedIn }: { isLoggedIn: boolean }) {
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
               <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link>
               <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How it Works</Link>
-              <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+              <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
               <Link href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Testimonials</Link>
             </nav>
 
@@ -509,101 +509,7 @@ export default function LandingPage({ isLoggedIn }: { isLoggedIn: boolean }) {
            </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="py-24">
-          <div className="container mx-auto px-4 max-w-7xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Simple, transparent pricing</h2>
-              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                No hidden fees. No surprise charges. Choose the plan that scales with your gym.
-              </p>
-              
-              <div className="inline-flex items-center bg-muted/50 rounded-full p-1 mt-8 border border-border/50 shadow-sm">
-                <button className="px-6 py-2 rounded-full bg-background shadow-sm text-sm font-medium">Monthly</button>
-                <button className="px-6 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Annually <span className="text-xs text-emerald-500 ml-1">-20%</span></button>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-              {/* Basic */}
-              <Card className="border-border/50 shadow-sm hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Starter</CardTitle>
-                  <CardDescription>Perfect for single-location gyms</CardDescription>
-                  <div className="mt-4 flex items-baseline text-4xl font-extrabold">
-                    $49<span className="ml-1 text-xl font-medium text-muted-foreground">/mo</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-4 text-sm mt-4">
-                    {['Up to 500 members', '1 Gym location', 'Basic analytics', 'Email support', 'Payment Gateway Integration'].map(feature => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline">Start Free Trial</Button>
-                </CardFooter>
-              </Card>
-
-              {/* Pro */}
-              <Card className="border-primary shadow-xl scale-100 md:scale-105 relative bg-background/50 backdrop-blur-sm z-10">
-                <div className="absolute -top-4 inset-x-0 w-full flex justify-center">
-                  <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                    Most Popular
-                  </span>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Pro</CardTitle>
-                  <CardDescription>For growing fitness franchises</CardDescription>
-                  <div className="mt-4 flex items-baseline text-5xl font-extrabold text-primary">
-                    $129<span className="ml-1 text-xl font-medium text-muted-foreground text-foreground">/mo</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-4 text-sm mt-4">
-                    {['Unlimited members', 'Up to 5 locations', 'Advanced analytics & MRI', 'Priority 24/7 support', 'Custom class scheduling', 'Automated marketing tools'].map(feature => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                        <span className="font-medium text-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full rounded-xl shadow-lg shadow-primary/20">Get Started</Button>
-                </CardFooter>
-              </Card>
-
-              {/* Enterprise */}
-              <Card className="border-border/50 shadow-sm hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Enterprise</CardTitle>
-                  <CardDescription>Custom solutions for large networks</CardDescription>
-                  <div className="mt-4 flex items-baseline text-4xl font-extrabold">
-                    Custom
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-4 text-sm mt-4">
-                    {['Unlimited everything', 'White-labeled mobile app', 'Dedicated Account Manager', 'Custom integrations', 'API Access', 'On-premise deployment option'].map(feature => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline">Contact Sales</Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </section>
 
         {/* Testimonials */}
         <section id="testimonials" className="py-24 bg-muted/20 border-t border-border/50">
@@ -676,7 +582,7 @@ export default function LandingPage({ isLoggedIn }: { isLoggedIn: boolean }) {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><Link href="#features" className="hover:text-primary transition-colors">Features</Link></li>
-                <li><Link href="#pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
+                <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
                 <li><Link href="#" className="hover:text-primary transition-colors">Integrations</Link></li>
                 <li><Link href="#" className="hover:text-primary transition-colors">Changelog</Link></li>
               </ul>

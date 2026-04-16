@@ -64,19 +64,19 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md px-4">
+      <div className="w-full max-w-md px-4 mt-8 md:mt-0">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mb-4">
             <Dumbbell className="w-6 h-6 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">FixHubX</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create your account</p>
+          <p className="text-sm text-muted-foreground mt-1">Gym Owner Registration</p>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Get started</CardTitle>
-            <CardDescription>Join FixHubX to manage your fitness journey</CardDescription>
+            <CardTitle>Partner with us</CardTitle>
+            <CardDescription>Setup your gym details to get started</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -107,6 +107,26 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Gym Name</label>
+                <Input
+                  {...register("gymName")}
+                  type="text"
+                  placeholder="Iron Fist Fitness"
+                />
+                {errors.gymName && <p className="text-sm text-destructive">{errors.gymName.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Requirements (Optional)</label>
+                <Input
+                  {...register("requirements")}
+                  type="text"
+                  placeholder="Need multi-vendor support, etc."
+                />
+                {errors.requirements && <p className="text-sm text-destructive">{errors.requirements.message}</p>}
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Password</label>
                 <Input
                   {...register("password")}
@@ -116,14 +136,14 @@ export default function RegisterPage() {
                 {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+              <Button type="submit" disabled={isLoading} className="w-full mt-2" size="lg">
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     Creating account...
                   </>
                 ) : (
-                  "Sign up"
+                  "Sign up & Create Gym"
                 )}
               </Button>
             </form>

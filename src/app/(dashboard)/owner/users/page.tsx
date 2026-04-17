@@ -428,20 +428,19 @@ export default function OwnerUsersPage() {
               </div>
             ) : viewUserData ? (
               <div className="space-y-6">
-                {/* Premium Banner & Avatar Profile */}
                 <div className="relative rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
                   {/* Subtle Gradient Header */}
-                  <div className="h-24 w-full bg-gradient-to-r from-emerald-500/10 via-primary/5 to-blue-500/10 border-b border-border"></div>
+                  <div className="h-32 w-full bg-gradient-to-r from-emerald-500/10 via-primary/5 to-blue-500/10 border-b border-border relative z-0"></div>
                   
-                  <div className="px-6 pb-6 -mt-12 relative flex flex-col sm:flex-row items-center sm:items-end gap-5">
-                    <div className="w-24 h-24 rounded-full border-4 border-card bg-primary/10 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-lg">
+                  <div className="px-6 pb-6 relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-5">
+                    <div className="w-24 h-24 -mt-12 rounded-full border-4 border-card bg-primary/10 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-lg bg-card">
                       {viewUserData.profilePhoto ? (
                         <img src={viewUserData.profilePhoto} alt={viewUserData.name} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-3xl font-bold text-primary">{viewUserData.name.charAt(0)}</span>
                       )}
                     </div>
-                    <div className="flex-1 text-center sm:text-left mb-1">
+                    <div className="flex-1 text-center sm:text-left mt-2 sm:mt-0 mb-1">
                       <h4 className="text-2xl font-bold text-foreground">{viewUserData.name}</h4>
                       <p className="text-sm font-medium text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5 mt-0.5">
                         <Mail className="w-3.5 h-3.5" />
@@ -449,7 +448,7 @@ export default function OwnerUsersPage() {
                       </p>
                     </div>
                     <div className="flex gap-2 mb-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-secondary text-secondary-foreground shadow-sm">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-secondary text-secondary-foreground shadow-sm border border-border/50">
                         {viewUserData.role}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${viewUserData.active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-destructive/10 text-destructive"}`}>

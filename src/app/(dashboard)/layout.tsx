@@ -124,6 +124,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }
 
+  // Determine current page title
+  const activeLink = [...links].sort((a, b) => b.href.length - a.href.length).find(l => pathname === l.href || pathname.startsWith(l.href + '/'));
+  let pageTitle = activeLink ? activeLink.name : "Dashboard";
+  
+  // Custom titles for deep nested routes
+  if (pathname.includes("/workouts/create")) pageTitle = "Create Workout Plan";
+  if (pathname.includes("/diets/create")) pageTitle = "Create Diet Plan";
+
+  // Update document title dynamically
+  useEffect(() => {
+    document.title = `${pageTitle} | ${brandName}`;
+  }, [pageTitle, brandName]);
+
   return (
     <SidebarProvider>
       <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
@@ -145,7 +158,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SidebarMenu>
                   {links.map((link) => {
                     const Icon = link.icon;
-                    const isActive = pathname === link.href;
+                    const isRoot = link.href === "/owner" || link.href === "/trainer" || link.href === "/super-admin" || link.href === "/member/dashboard";
+                    const isActive = pathname === link.href || (!isRoot && pathname.startsWith(link.href + '/'));
 
                     return (
                       <SidebarMenuItem key={link.href}>
@@ -203,7 +217,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {brandIcon}
               </div>
               <h2 className="text-lg font-semibold flex">
-                {links.find((l) => l.href === pathname)?.name || "Dashboard"}
+                {pageTitle}
               </h2>
             </div>
             <div className="flex items-center gap-3">
@@ -226,7 +240,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               return priorityNames.includes(link.name) || link.name.includes("Dashboard");
             }).slice(0, 5).map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isRoot = link.href === "/owner" || link.href === "/trainer" || link.href === "/super-admin" || link.href === "/member/dashboard";
+              const isActive = pathname === link.href || (!isRoot && pathname.startsWith(link.href + '/'));
 
               return (
                 <Link

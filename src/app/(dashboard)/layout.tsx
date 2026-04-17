@@ -108,12 +108,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (role === "TRAINER") links = trainerLinks;
 
   // Brand display logic
-  let brandName = "FixHubX";
+  let brandName = "FitHubX";
   let brandIcon = <Dumbbell className="w-7 h-7" />;
   let brandSub = role.replace("_", " ");
 
   if (role === "SUPER_ADMIN") {
-    brandName = "FixHubX";
+    brandName = "FitHubX";
     brandIcon = <ShieldCheck className="w-7 h-7" />;
     brandSub = "SUPER ADMIN";
   } else if (gymName) {

@@ -72,7 +72,7 @@ export default function PricingPage() {
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
                 <Dumbbell className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-xl font-bold tracking-tight">FixHubX</span>
+              <span className="text-xl font-bold tracking-tight">FitHubX</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -489,7 +489,7 @@ export default function PricingPage() {
             <div className="col-span-2 lg:col-span-2 space-y-4">
               <div className="flex items-center gap-2">
                 <Dumbbell className="w-5 h-5 text-primary" />
-                <span className="text-xl font-bold tracking-tight">FixHubX</span>
+                <span className="text-xl font-bold tracking-tight">FitHubX</span>
               </div>
               <p className="text-muted-foreground max-w-sm">
                 The modern operating system for gyms and fitness studios across India.
@@ -525,7 +525,7 @@ export default function PricingPage() {
           </div>
           
           <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50 text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} FixHubX India. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} FitHubX India. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>

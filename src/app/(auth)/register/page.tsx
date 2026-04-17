@@ -69,7 +69,7 @@ export default function RegisterPage() {
           <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mb-4">
             <Dumbbell className="w-6 h-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">FixHubX</h1>
+          <h1 className="text-2xl font-bold text-foreground">FitHubX</h1>
           <p className="text-sm text-muted-foreground mt-1">Gym Owner Registration</p>
         </div>
 

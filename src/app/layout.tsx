@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "FixHubX",
+  title: "FitHubX",
   description: "Advanced Gym Management System",
 };
 
@@ -22,7 +22,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("h-full", "antialiased", "font-sans", inter.variable)}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

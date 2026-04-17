@@ -84,9 +84,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Gym not found" }, { status: 404 });
     }
 
-    // Attach payment link
+    // Attach payment link with login redirect
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || (req.headers.get("origin") || "http://localhost:3000");
-    const paymentLink = `${appUrl}/member/payments`;
+    const targetUrl = "/member/subscription";
+    const paymentLink = `${appUrl}/login?redirect=${encodeURIComponent(targetUrl)}`;
     const finalMessage = `${message}\n\nPay online here: ${paymentLink}`;
 
     // Validate and "send" based on channel

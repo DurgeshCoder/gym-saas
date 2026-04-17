@@ -57,16 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [gymId, role]);
 
-  if (status === "loading") {
-    return (
-      <div className="h-screen flex items-center justify-center text-slate-500">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
-          Loading your workspace...
-        </div>
-      </div>
-    );
-  }
+
 
   // Navigation links per role
   const ownerLinks = [
@@ -136,6 +127,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     document.title = `${pageTitle} | ${brandName}`;
   }, [pageTitle, brandName]);
+
+  if (status === "loading") {
+    return (
+      <div className="h-screen flex items-center justify-center text-slate-500">
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+          Loading your workspace...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

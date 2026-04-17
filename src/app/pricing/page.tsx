@@ -53,6 +53,7 @@ export default function PricingPage() {
     { name: "Payment Reminders", starter: false, growth: true, pro: true },
     { name: "Analytics Dashboard", starter: false, growth: "Basic", pro: "Advanced" },
     { name: "Priority 24/7 Support", starter: false, growth: false, pro: true },
+    { name: "SEO Landing Page", starter: true, growth: true, pro: true },
   ];
 
   return (
@@ -182,6 +183,10 @@ export default function PricingPage() {
                           <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                           <span className="text-muted-foreground">Limited features</span>
                         </li>
+                        <li className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                          <span className="text-muted-foreground">1 SEO Optimized Landing Page</span>
+                        </li>
                       </ul>
                     </CardContent>
                     <CardFooter>
@@ -221,6 +226,10 @@ export default function PricingPage() {
                           <Check className="w-5 h-5 text-primary flex-shrink-0" />
                           <span className="text-foreground">Analytics dashboard</span>
                         </li>
+                        <li className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                          <span className="text-foreground">1 SEO Optimized Landing Page</span>
+                        </li>
                       </ul>
                     </CardContent>
                     <CardFooter>
@@ -254,6 +263,10 @@ export default function PricingPage() {
                         <li className="flex items-center gap-3">
                           <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                           <span className="text-muted-foreground">All Growth features included</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                          <span className="text-muted-foreground">1 SEO Optimized Landing Page</span>
                         </li>
                       </ul>
                     </CardContent>
@@ -301,6 +314,10 @@ export default function PricingPage() {
                       <div className="flex items-center gap-3">
                         <Check className="w-5 h-5 text-primary flex-shrink-0" />
                         <span className="font-medium text-foreground">Pay only for active members</span>
+                      </div>
+                      <div className="flex items-center gap-3 sm:col-span-2">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="font-medium text-foreground">1 SEO Optimized Landing Page</span>
                       </div>
                       <div className="flex items-center gap-3 sm:col-span-2">
                         <Check className="w-5 h-5 text-primary flex-shrink-0" />

@@ -41,7 +41,7 @@ export default function PricingPage() {
     },
     {
       q: "What happens if I exceed member limit?",
-      a: "For fixed plans, you'll be charged a simple fee of ₹2 per extra active member for that month, ensuring your service is never interrupted."
+      a: "For fixed plans, you'll be charged a simple fee of ₹39 per extra active member for that month, ensuring your service is never interrupted."
     }
   ];
 
@@ -161,7 +161,7 @@ export default function PricingPage() {
                       <CardTitle className="text-2xl">Starter Plan</CardTitle>
                       <CardDescription>Perfect for small boutique gyms</CardDescription>
                       <div className="mt-4 flex items-baseline text-4xl font-extrabold">
-                        ₹499<span className="ml-1 text-xl font-medium text-muted-foreground">/month</span>
+                        ₹999<span className="ml-1 text-xl font-medium text-muted-foreground">/month</span>
                       </div>
                     </CardHeader>
                     <CardContent className="flex-1">
@@ -200,7 +200,7 @@ export default function PricingPage() {
                       <CardTitle className="text-2xl">Growth Plan</CardTitle>
                       <CardDescription>Ideal for growing fitness centers</CardDescription>
                       <div className="mt-4 flex items-baseline text-5xl font-extrabold text-primary">
-                        ₹999<span className="ml-1 text-xl font-medium text-foreground">/month</span>
+                        ₹1999<span className="ml-1 text-xl font-medium text-foreground">/month</span>
                       </div>
                     </CardHeader>
                     <CardContent className="flex-1">
@@ -234,7 +234,7 @@ export default function PricingPage() {
                       <CardTitle className="text-2xl">Pro Plan</CardTitle>
                       <CardDescription>For established gyms & franchises</CardDescription>
                       <div className="mt-4 flex items-baseline text-4xl font-extrabold">
-                        ₹1999<span className="ml-1 text-xl font-medium text-muted-foreground">/month</span>
+                        ₹3999<span className="ml-1 text-xl font-medium text-muted-foreground">/month</span>
                       </div>
                     </CardHeader>
                     <CardContent className="flex-1">
@@ -264,7 +264,7 @@ export default function PricingPage() {
                 </div>
                 
                 <div className="text-center mt-12 text-muted-foreground bg-muted/30 py-4 px-6 rounded-2xl max-w-max mx-auto border border-border/50">
-                  <span className="font-medium text-foreground">Need more members?</span> &nbsp;→&nbsp; ₹2 per extra member/month billed automatically.
+                  <span className="font-medium text-foreground">Need more members?</span> &nbsp;→&nbsp; ₹39 per extra member/month billed automatically.
                 </div>
               </motion.div>
             ) : (
@@ -286,10 +286,10 @@ export default function PricingPage() {
                     <CardTitle className="text-3xl md:text-4xl font-extrabold">Pay As You Grow</CardTitle>
                     <CardDescription className="text-lg mt-2">Zero fixed costs. Only pay for the members that show up.</CardDescription>
                     <div className="mt-8 flex justify-center items-baseline text-6xl font-extrabold text-foreground">
-                      ₹2<span className="ml-2 text-2xl font-medium text-muted-foreground">/ active member / month</span>
+                      ₹39<span className="ml-2 text-2xl font-medium text-muted-foreground">/ active member / month</span>
                     </div>
                     <p className="text-sm font-medium text-emerald-600 mt-4 bg-emerald-500/10 inline-block px-4 py-1.5 rounded-full">
-                      Minimum billing: ₹499/month
+                      Minimum billing: ₹999/month
                     </p>
                   </CardHeader>
                   <CardContent className="mt-10 max-w-2xl mx-auto border-t border-border/50 pt-10">

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
+import { uploadService } from "@/services/upload-service";
 
 export async function POST(req: Request) {
   try {
@@ -33,27 +31,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid upload type" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create target directory based on type
-    const uploadDir = path.join(process.cwd(), "public", "uploads", type === "gym" ? "gyms" : "users");
-    
-    // Ensure directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Generate unique filename
-    const uniqueSuffix = crypto.randomBytes(8).toString("hex");
-    const extension = path.extname(file.name) || (file.type === "image/png" ? ".png" : ".jpg");
     const userId = (session.user as any).id;
-    const filename = `${userId}-${uniqueSuffix}${extension}`;
-    const filePath = path.join(uploadDir, filename);
-
-    // Write file
-    await fs.writeFile(filePath, buffer);
-
-    // Return the public URL
-    const url = `/uploads/${type === "gym" ? "gyms" : "users"}/${filename}`;
+    const url = await uploadService.upload(file, type, userId);
     
     return NextResponse.json({ url });
   } catch (error: any) {

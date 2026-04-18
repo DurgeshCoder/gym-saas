@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl, extractFileKey } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -23,6 +24,7 @@ export async function GET(req: Request) {
     // Explicitly casting to any to bypass IDE ghost errors while keeping data intact
     const responseData: any = gym ? {
       ...gym,
+      logo: getFileUrl(gym.logo),
       openingHours: gym.openingHours || {},
       socialLinks: gym.socialLinks || {},
     } : {};
@@ -65,7 +67,7 @@ export async function PUT(req: Request) {
     // Direct object creation with skip-types to ignore IDE caching issues
     const gymData: any = {
       name,
-      logo,
+      logo: extractFileKey(logo),
       address,
       phone,
       email,
@@ -98,6 +100,10 @@ export async function PUT(req: Request) {
       where: { id: ownerId },
       data: { gymId: updated.id }
     });
+
+    if (updated.logo) {
+      updated.logo = getFileUrl(updated.logo);
+    }
 
     return NextResponse.json({ message: "Gym updated successfully", gym: updated });
   } catch (error: any) {

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { uploadService } from "@/services/upload-service";
+import { prisma } from "@/lib/prisma";
+import { uploadService, getFileUrl } from "@/services/upload-service";
 
 export async function POST(req: Request) {
   try {
@@ -32,9 +33,25 @@ export async function POST(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const url = await uploadService.upload(file, type, userId);
+    const key = await uploadService.upload(file, type, userId);
+    console.log(key);
+
+    if (type === "user") {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { profilePhoto: key }
+      });
+    } else if (type === "gym") {
+      const existingGym = await prisma.gym.findUnique({ where: { ownerId: userId } });
+      if (existingGym) {
+        await prisma.gym.update({
+          where: { ownerId: userId },
+          data: { logo: key }
+        });
+      }
+    }
     
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: getFileUrl(key) });
   } catch (error: any) {
     console.error("Upload error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });

@@ -33,7 +33,13 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -88,8 +94,24 @@ interface GymSettings {
   twilioWhatsappNumber?: string;
 }
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const DAY_SHORT: Record<string, string> = { Monday: "Mon", Tuesday: "Tue", Wednesday: "Wed", Thursday: "Thu", Friday: "Fri", Saturday: "Sat", Sunday: "Sun" };
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+const DAY_SHORT: Record<string, string> = {
+  Monday: "Mon",
+  Tuesday: "Tue",
+  Wednesday: "Wed",
+  Thursday: "Thu",
+  Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
+};
 
 const defaultDayHours: DayHours = {
   closed: false,
@@ -104,12 +126,20 @@ const defaultDayHours: DayHours = {
 const buildDefaultHours = (): OpeningHoursData => {
   const hours: any = { type: "full_day" as HoursType };
   DAYS.forEach((day) => {
-    hours[day] = { ...defaultDayHours, shifts: defaultDayHours.shifts.map((s) => ({ ...s })) };
+    hours[day] = {
+      ...defaultDayHours,
+      shifts: defaultDayHours.shifts.map((s) => ({ ...s })),
+    };
   });
   return hours;
 };
 
-const defaultSocials = { instagram: "", facebook: "", twitter: "", youtube: "" };
+const defaultSocials = {
+  instagram: "",
+  facebook: "",
+  twitter: "",
+  youtube: "",
+};
 
 /* ─── Migrate legacy format ─── */
 function migrateOpeningHours(raw: any): OpeningHoursData {
@@ -124,7 +154,10 @@ function migrateOpeningHours(raw: any): OpeningHoursData {
             { name: "Evening", open: "16:00", close: "22:00" },
           ];
       } else {
-        raw[day] = { ...defaultDayHours, shifts: defaultDayHours.shifts.map((s) => ({ ...s })) };
+        raw[day] = {
+          ...defaultDayHours,
+          shifts: defaultDayHours.shifts.map((s) => ({ ...s })),
+        };
       }
     });
     return raw as OpeningHoursData;
@@ -157,7 +190,8 @@ const SOCIAL_INITIALS: Record<string, string> = {
 const SOCIAL_COLORS: Record<string, string> = {
   instagram: "from-pink-500 to-purple-500",
   facebook: "from-blue-600 to-blue-500",
-  twitter: "from-neutral-800 to-neutral-700 dark:from-neutral-200 dark:to-neutral-300",
+  twitter:
+    "from-neutral-800 to-neutral-700 dark:from-neutral-200 dark:to-neutral-300",
   youtube: "from-red-600 to-red-500",
 };
 
@@ -232,7 +266,10 @@ export default function OwnerSettingsPage() {
     fetchSettings();
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "gym" | "user") => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "gym" | "user",
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -248,7 +285,9 @@ export default function OwnerSettingsPage() {
     });
 
     if (!isSquare) {
-      toast.error("Image must be a perfect square (1:1 ratio). Please crop it first.");
+      toast.error(
+        "Image must be a perfect square (1:1 ratio). Please crop it first.",
+      );
       return;
     }
 
@@ -261,7 +300,7 @@ export default function OwnerSettingsPage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       if (res.ok) {
         const data = await res.json();
-        setFormData(prev => ({ ...prev, logo: data.url }));
+        setFormData((prev) => ({ ...prev, logo: data.url }));
         toast.success("Logo uploaded successfully!");
       } else {
         const err = await res.json();
@@ -301,7 +340,8 @@ export default function OwnerSettingsPage() {
   };
 
   /* ─── Hours helpers ─── */
-  const getDayHours = (day: string): DayHours => formData.openingHours[day] as DayHours;
+  const getDayHours = (day: string): DayHours =>
+    formData.openingHours[day] as DayHours;
   const hoursType = formData.openingHours.type as HoursType;
 
   const setHoursType = (type: HoursType) => {
@@ -323,7 +363,10 @@ export default function OwnerSettingsPage() {
 
   const addShift = (day: string) => {
     const dh = getDayHours(day);
-    const newShifts = [...dh.shifts, { name: `Shift ${dh.shifts.length + 1}`, open: "09:00", close: "17:00" }];
+    const newShifts = [
+      ...dh.shifts,
+      { name: `Shift ${dh.shifts.length + 1}`, open: "09:00", close: "17:00" },
+    ];
     updateDayHours(day, { shifts: newShifts });
   };
 
@@ -336,11 +379,16 @@ export default function OwnerSettingsPage() {
 
   const updateShift = (day: string, idx: number, patch: Partial<Shift>) => {
     const dh = getDayHours(day);
-    const newShifts = dh.shifts.map((s, i) => (i === idx ? { ...s, ...patch } : s));
+    const newShifts = dh.shifts.map((s, i) =>
+      i === idx ? { ...s, ...patch } : s,
+    );
     updateDayHours(day, { shifts: newShifts });
   };
 
-  const updateSocial = (platform: keyof GymSettings["socialLinks"], value: string) => {
+  const updateSocial = (
+    platform: keyof GymSettings["socialLinks"],
+    value: string,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       socialLinks: { ...prev.socialLinks, [platform]: value },
@@ -348,7 +396,7 @@ export default function OwnerSettingsPage() {
   };
 
   /* ─── Convenience ─── */
-  const openDaysCount = DAYS.filter((d) => !(getDayHours(d).closed)).length;
+  const openDaysCount = DAYS.filter((d) => !getDayHours(d).closed).length;
 
   /* ─── Loading ─── */
   if (loading) {
@@ -361,8 +409,12 @@ export default function OwnerSettingsPage() {
             </div>
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-foreground">Loading settings</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Preparing your gym profile...</p>
+            <p className="text-sm font-semibold text-foreground">
+              Loading settings
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Preparing your gym profile...
+            </p>
           </div>
         </div>
       </div>
@@ -386,7 +438,8 @@ export default function OwnerSettingsPage() {
               Gym Settings
             </h1>
             <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-              Configure your gym profile, contact details, operating hours, and payment integrations—all in one place.
+              Configure your gym profile, contact details, operating hours, and
+              payment integrations—all in one place.
             </p>
           </div>
           <div className="hidden sm:flex items-center gap-2">
@@ -400,8 +453,14 @@ export default function OwnerSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* ═══ Tabs ═══ */}
-        <Tabs defaultValue="general" onValueChange={(val) => setActiveTab(val as string)}>
-          <TabsList className="w-full justify-start gap-0 overflow-x-auto" variant="line">
+        <Tabs
+          defaultValue="general"
+          onValueChange={(val) => setActiveTab(val as string)}
+        >
+          <TabsList
+            className="w-full justify-start gap-0 overflow-x-auto"
+            variant="line"
+          >
             <TabsTrigger value="general" className="gap-1.5">
               <Building2 className="w-4 h-4" />
               General
@@ -440,8 +499,12 @@ export default function OwnerSettingsPage() {
                         <Building2 className="w-4.5 h-4.5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-base">General Information</CardTitle>
-                        <CardDescription>Basic details about your gym that members see first.</CardDescription>
+                        <CardTitle className="text-base">
+                          General Information
+                        </CardTitle>
+                        <CardDescription>
+                          Basic details about your gym that members see first.
+                        </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -454,7 +517,9 @@ export default function OwnerSettingsPage() {
                         required
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         placeholder="e.g. FitZone Elite Gym"
                         className="h-11"
                       />
@@ -466,11 +531,17 @@ export default function OwnerSettingsPage() {
                     <Separator />
 
                     <div>
-                      <label className="block text-sm font-semibold text-foreground mb-1.5">Gym Logo</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
+                        Gym Logo
+                      </label>
                       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                         <div className="w-20 h-20 rounded-xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden shrink-0">
                           {formData.logo ? (
-                            <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
+                            <img
+                              src={`${formData.logo}`}
+                              alt="Logo"
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-muted-foreground/50" />
                           )}
@@ -486,16 +557,6 @@ export default function OwnerSettingsPage() {
                               disabled={saving}
                             />
                           </label>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">Or specify URL:</span>
-                            <Input
-                              type="text"
-                              value={formData.logo}
-                              onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                              placeholder="https://..."
-                              className="h-8 text-xs"
-                            />
-                          </div>
                         </div>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-2">
@@ -511,7 +572,12 @@ export default function OwnerSettingsPage() {
                       </label>
                       <Textarea
                         value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
                         className="min-h-[140px] resize-none"
                         placeholder="Tell members what makes your gym unique—equipment, trainers, atmosphere..."
                       />
@@ -535,7 +601,11 @@ export default function OwnerSettingsPage() {
                     <div className="flex flex-col items-center text-center space-y-4">
                       <div className="w-20 h-20 rounded-2xl bg-muted/50 border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
                         {formData.logo ? (
-                          <img src={formData.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+                          <img
+                            src={formData.logo}
+                            alt="Logo"
+                            className="w-full h-full object-cover rounded-xl"
+                          />
                         ) : (
                           <Building2 className="w-8 h-8 text-muted-foreground/40" />
                         )}
@@ -559,14 +629,20 @@ export default function OwnerSettingsPage() {
                       <Separator />
                       <div className="grid grid-cols-2 gap-3 w-full">
                         <div className="p-2.5 rounded-lg bg-muted/50 text-center">
-                          <p className="text-lg font-bold text-foreground">{openDaysCount}</p>
-                          <p className="text-[10px] text-muted-foreground font-medium uppercase">Open Days</p>
+                          <p className="text-lg font-bold text-foreground">
+                            {openDaysCount}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase">
+                            Open Days
+                          </p>
                         </div>
                         <div className="p-2.5 rounded-lg bg-muted/50 text-center">
                           <p className="text-lg font-bold text-foreground capitalize">
                             {hoursType === "full_day" ? "Full" : "Shifts"}
                           </p>
-                          <p className="text-[10px] text-muted-foreground font-medium uppercase">Schedule</p>
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase">
+                            Schedule
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -586,7 +662,9 @@ export default function OwnerSettingsPage() {
                       <Phone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Contact & Location</CardTitle>
+                      <CardTitle className="text-base">
+                        Contact & Location
+                      </CardTitle>
                       <CardDescription>
                         How members and visitors can reach or find your gym.
                       </CardDescription>
@@ -604,7 +682,9 @@ export default function OwnerSettingsPage() {
                       <Input
                         type="text"
                         value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, address: e.target.value })
+                        }
                         className="pl-10 h-11"
                         placeholder="123 Main Street, Floor 2, New York, NY 10001"
                       />
@@ -616,39 +696,54 @@ export default function OwnerSettingsPage() {
                   {/* Contact rows */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div>
-                      <label className="block text-sm font-semibold text-foreground mb-1.5">Phone Number</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
+                        Phone Number
+                      </label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           type="text"
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
                           className="pl-10 h-11"
                           placeholder="+91 98765 43210"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-foreground mb-1.5">Email Address</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
+                        Email Address
+                      </label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           type="email"
                           value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
                           className="pl-10 h-11"
                           placeholder="hello@yourgym.com"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-foreground mb-1.5">Website</label>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
+                        Website
+                      </label>
                       <div className="relative">
                         <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           type="text"
                           value={formData.website}
-                          onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              website: e.target.value,
+                            })
+                          }
                           className="pl-10 h-11"
                           placeholder="https://yourgym.com"
                         />
@@ -670,19 +765,26 @@ export default function OwnerSettingsPage() {
                       <Globe className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Social Media Links</CardTitle>
+                      <CardTitle className="text-base">
+                        Social Media Links
+                      </CardTitle>
                       <CardDescription>
-                        Connect your social profiles so members can follow you everywhere.
+                        Connect your social profiles so members can follow you
+                        everywhere.
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {(["instagram", "facebook", "twitter", "youtube"] as const).map((platform) => (
+                    {(
+                      ["instagram", "facebook", "twitter", "youtube"] as const
+                    ).map((platform) => (
                       <div key={platform} className="group">
                         <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-1.5">
-                          <span className={`w-6 h-6 rounded-md bg-linear-to-br ${SOCIAL_COLORS[platform]} flex items-center justify-center text-white text-[10px] font-black`}>
+                          <span
+                            className={`w-6 h-6 rounded-md bg-linear-to-br ${SOCIAL_COLORS[platform]} flex items-center justify-center text-white text-[10px] font-black`}
+                          >
                             {SOCIAL_INITIALS[platform]}
                           </span>
                           {platform.charAt(0).toUpperCase() + platform.slice(1)}
@@ -690,7 +792,9 @@ export default function OwnerSettingsPage() {
                         <Input
                           type="text"
                           value={formData.socialLinks[platform]}
-                          onChange={(e) => updateSocial(platform, e.target.value)}
+                          onChange={(e) =>
+                            updateSocial(platform, e.target.value)
+                          }
                           placeholder={`https://${platform}.com/yourgym`}
                           className="h-11"
                         />
@@ -712,9 +816,12 @@ export default function OwnerSettingsPage() {
                       <CreditCard className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Payment Gateway — Razorpay</CardTitle>
+                      <CardTitle className="text-base">
+                        Payment Gateway — Razorpay
+                      </CardTitle>
                       <CardDescription>
-                        Enable online fee collection by connecting your Razorpay account.
+                        Enable online fee collection by connecting your Razorpay
+                        account.
                       </CardDescription>
                     </div>
                   </div>
@@ -724,9 +831,13 @@ export default function OwnerSettingsPage() {
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20">
                     <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Sensitive Credentials</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Sensitive Credentials
+                      </p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                        Your Razorpay keys are stored securely and used only for payment processing. Never share your secret key publicly.
+                        Your Razorpay keys are stored securely and used only for
+                        payment processing. Never share your secret key
+                        publicly.
                       </p>
                     </div>
                   </div>
@@ -739,7 +850,12 @@ export default function OwnerSettingsPage() {
                       <Input
                         type="text"
                         value={formData.razorpayKeyId}
-                        onChange={(e) => setFormData({ ...formData, razorpayKeyId: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            razorpayKeyId: e.target.value,
+                          })
+                        }
                         placeholder="rzp_live_xxxxxxxxxxxxxx"
                         className="h-11 font-mono text-sm"
                       />
@@ -755,7 +871,12 @@ export default function OwnerSettingsPage() {
                         <Input
                           type={showSecret ? "text" : "password"}
                           value={formData.razorpayKeySecret}
-                          onChange={(e) => setFormData({ ...formData, razorpayKeySecret: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              razorpayKeySecret: e.target.value,
+                            })
+                          }
                           placeholder="••••••••••••••••"
                           className="h-11 font-mono text-sm pr-10"
                         />
@@ -764,11 +885,16 @@ export default function OwnerSettingsPage() {
                           onClick={() => setShowSecret(!showSecret)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showSecret ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-1.5">
-                        This key is hidden after save. Regenerate from Razorpay dashboard if lost.
+                        This key is hidden after save. Regenerate from Razorpay
+                        dashboard if lost.
                       </p>
                     </div>
                   </div>
@@ -789,7 +915,9 @@ export default function OwnerSettingsPage() {
                         <Clock className="w-4.5 h-4.5 text-orange-600 dark:text-orange-400" />
                       </div>
                       <div>
-                        <CardTitle className="text-base">Operating Hours</CardTitle>
+                        <CardTitle className="text-base">
+                          Operating Hours
+                        </CardTitle>
                         <CardDescription>
                           Choose how to define your gym&apos;s daily schedule.
                         </CardDescription>
@@ -853,29 +981,39 @@ export default function OwnerSettingsPage() {
                         >
                           <div className="flex items-center gap-3 p-3.5 sm:p-4">
                             {/* Day indicator */}
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-xs font-black uppercase ${
-                              dh.closed
-                                ? "bg-muted text-muted-foreground"
-                                : isWeekend
-                                  ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
-                                  : "bg-primary/10 text-primary"
-                            }`}>
+                            <div
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-xs font-black uppercase ${
+                                dh.closed
+                                  ? "bg-muted text-muted-foreground"
+                                  : isWeekend
+                                    ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                                    : "bg-primary/10 text-primary"
+                              }`}
+                            >
                               {DAY_SHORT[day]}
                             </div>
 
                             {/* Day name + status */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-foreground">{day}</span>
+                                <span className="text-sm font-bold text-foreground">
+                                  {day}
+                                </span>
                                 {dh.closed ? (
-                                  <Badge variant="secondary" className="text-[10px] px-2 py-0">Closed</Badge>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] px-2 py-0"
+                                  >
+                                    Closed
+                                  </Badge>
                                 ) : hoursType === "full_day" ? (
                                   <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">
                                     {dh.open} – {dh.close}
                                   </span>
                                 ) : (
                                   <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">
-                                    {dh.shifts.length} shift{dh.shifts.length !== 1 ? "s" : ""}
+                                    {dh.shifts.length} shift
+                                    {dh.shifts.length !== 1 ? "s" : ""}
                                   </span>
                                 )}
                               </div>
@@ -886,7 +1024,11 @@ export default function OwnerSettingsPage() {
                               <input
                                 type="checkbox"
                                 checked={!dh.closed}
-                                onChange={(e) => updateDayHours(day, { closed: !e.target.checked })}
+                                onChange={(e) =>
+                                  updateDayHours(day, {
+                                    closed: !e.target.checked,
+                                  })
+                                }
                                 className="sr-only peer"
                               />
                               <div className="w-9 h-5 bg-muted rounded-full peer peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full after:shadow-sm" />
@@ -904,23 +1046,37 @@ export default function OwnerSettingsPage() {
                                   /* ── Full Day ── */
                                   <div className="flex items-center gap-3">
                                     <div className="flex-1">
-                                      <label className="block text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-wider">Opens</label>
+                                      <label className="block text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-wider">
+                                        Opens
+                                      </label>
                                       <Input
                                         type="time"
                                         value={dh.open}
-                                        onChange={(e) => updateDayHours(day, { open: e.target.value })}
+                                        onChange={(e) =>
+                                          updateDayHours(day, {
+                                            open: e.target.value,
+                                          })
+                                        }
                                         className="text-sm h-9"
                                       />
                                     </div>
                                     <div className="pt-5">
-                                      <span className="text-muted-foreground text-lg">→</span>
+                                      <span className="text-muted-foreground text-lg">
+                                        →
+                                      </span>
                                     </div>
                                     <div className="flex-1">
-                                      <label className="block text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-wider">Closes</label>
+                                      <label className="block text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-wider">
+                                        Closes
+                                      </label>
                                       <Input
                                         type="time"
                                         value={dh.close}
-                                        onChange={(e) => updateDayHours(day, { close: e.target.value })}
+                                        onChange={(e) =>
+                                          updateDayHours(day, {
+                                            close: e.target.value,
+                                          })
+                                        }
                                         className="text-sm h-9"
                                       />
                                     </div>
@@ -937,21 +1093,35 @@ export default function OwnerSettingsPage() {
                                         <Input
                                           type="text"
                                           value={shift.name}
-                                          onChange={(e) => updateShift(day, idx, { name: e.target.value })}
+                                          onChange={(e) =>
+                                            updateShift(day, idx, {
+                                              name: e.target.value,
+                                            })
+                                          }
                                           placeholder="Shift name"
                                           className="text-xs h-8 w-24 sm:w-28 min-w-0 shrink-0 font-medium"
                                         />
                                         <Input
                                           type="time"
                                           value={shift.open}
-                                          onChange={(e) => updateShift(day, idx, { open: e.target.value })}
+                                          onChange={(e) =>
+                                            updateShift(day, idx, {
+                                              open: e.target.value,
+                                            })
+                                          }
                                           className="text-xs h-8 min-w-0 flex-1"
                                         />
-                                        <span className="text-muted-foreground text-[10px] shrink-0">→</span>
+                                        <span className="text-muted-foreground text-[10px] shrink-0">
+                                          →
+                                        </span>
                                         <Input
                                           type="time"
                                           value={shift.close}
-                                          onChange={(e) => updateShift(day, idx, { close: e.target.value })}
+                                          onChange={(e) =>
+                                            updateShift(day, idx, {
+                                              close: e.target.value,
+                                            })
+                                          }
                                           className="text-xs h-8 min-w-0 flex-1"
                                         />
                                         <button
@@ -997,32 +1167,51 @@ export default function OwnerSettingsPage() {
                   </div>
                   <div>
                     <CardTitle>Email Settings</CardTitle>
-                    <CardDescription>Configure your email sender for automatic receipts and manual reminders.</CardDescription>
+                    <CardDescription>
+                      Configure your email sender for automatic receipts and
+                      manual reminders.
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">Provider</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      Provider
+                    </label>
                     <Input
                       placeholder="e.g. RESEND, SENDGRID, SMTP"
                       value={formData.emailProvider || ""}
-                      onChange={(e) => setFormData({ ...formData, emailProvider: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          emailProvider: e.target.value,
+                        })
+                      }
                       className="h-11 font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">Send From Address</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      Send From Address
+                    </label>
                     <Input
                       placeholder="e.g. notifications@yourgym.com"
                       value={formData.emailFromAddress || ""}
-                      onChange={(e) => setFormData({ ...formData, emailFromAddress: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          emailFromAddress: e.target.value,
+                        })
+                      }
                       className="h-11 font-medium"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">API Key / SMTP Password</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      API Key / SMTP Password
+                    </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Shield className="h-4 w-4 text-muted-foreground" />
@@ -1031,7 +1220,12 @@ export default function OwnerSettingsPage() {
                         type={showSecret ? "text" : "password"}
                         placeholder="sk_live_..."
                         value={formData.emailApiKey || ""}
-                        onChange={(e) => setFormData({ ...formData, emailApiKey: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            emailApiKey: e.target.value,
+                          })
+                        }
                         className="pl-10 h-11 font-mono text-sm tracking-widest"
                       />
                       <button
@@ -1039,7 +1233,11 @@ export default function OwnerSettingsPage() {
                         onClick={() => setShowSecret(!showSecret)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showSecret ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1055,29 +1253,45 @@ export default function OwnerSettingsPage() {
                   </div>
                   <div>
                     <CardTitle>Twilio SMS & WhatsApp</CardTitle>
-                    <CardDescription>Setup Twilio integration for global mobile notifications.</CardDescription>
+                    <CardDescription>
+                      Setup Twilio integration for global mobile notifications.
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">Account SID</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      Account SID
+                    </label>
                     <Input
                       placeholder="AC..."
                       value={formData.twilioAccountSid || ""}
-                      onChange={(e) => setFormData({ ...formData, twilioAccountSid: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          twilioAccountSid: e.target.value,
+                        })
+                      }
                       className="h-11 font-mono text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">Auth Token</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      Auth Token
+                    </label>
                     <div className="relative">
                       <Input
                         type={showSecret ? "text" : "password"}
                         placeholder="••••••••••••••••••••••••••••••••"
                         value={formData.twilioAuthToken || ""}
-                        onChange={(e) => setFormData({ ...formData, twilioAuthToken: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            twilioAuthToken: e.target.value,
+                          })
+                        }
                         className="h-11 font-mono text-sm tracking-widest pr-10"
                       />
                       <button
@@ -1085,25 +1299,43 @@ export default function OwnerSettingsPage() {
                         onClick={() => setShowSecret(!showSecret)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showSecret ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">Twilio Phone Number (SMS)</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      Twilio Phone Number (SMS)
+                    </label>
                     <Input
                       placeholder="e.g. +1234567890"
                       value={formData.twilioSmsNumber || ""}
-                      onChange={(e) => setFormData({ ...formData, twilioSmsNumber: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          twilioSmsNumber: e.target.value,
+                        })
+                      }
                       className="h-11 font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">WhatsApp Sender Number</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      WhatsApp Sender Number
+                    </label>
                     <Input
                       placeholder="e.g. whatsapp:+14155238886"
                       value={formData.twilioWhatsappNumber || ""}
-                      onChange={(e) => setFormData({ ...formData, twilioWhatsappNumber: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          twilioWhatsappNumber: e.target.value,
+                        })
+                      }
                       className="h-11 font-medium"
                     />
                   </div>
@@ -1122,11 +1354,20 @@ export default function OwnerSettingsPage() {
                   <CheckCircle2 className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-foreground">Ready to save?</p>
-                  <p className="text-xs text-muted-foreground">Changes will be applied immediately across the platform.</p>
+                  <p className="font-bold text-sm text-foreground">
+                    Ready to save?
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Changes will be applied immediately across the platform.
+                  </p>
                 </div>
               </div>
-              <Button type="submit" disabled={saving} size="lg" className="w-full sm:w-auto gap-2 shadow-sm">
+              <Button
+                type="submit"
+                disabled={saving}
+                size="lg"
+                className="w-full sm:w-auto gap-2 shadow-sm"
+              >
                 {saving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />

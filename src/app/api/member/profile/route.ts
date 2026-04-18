@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl, extractFileKey } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -13,6 +14,10 @@ export async function GET(req: Request) {
       where: { id: userId },
       select: { name: true, email: true, profilePhoto: true },
     });
+
+    if (user && user.profilePhoto) {
+      user.profilePhoto = getFileUrl(user.profilePhoto);
+    }
 
     return NextResponse.json({ data: user });
   } catch (error) {
@@ -31,9 +36,13 @@ export async function PUT(req: Request) {
 
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { name, profilePhoto },
+      data: { name, profilePhoto: extractFileKey(profilePhoto) },
       select: { name: true, email: true, profilePhoto: true }
     });
+
+    if (updated.profilePhoto) {
+      updated.profilePhoto = getFileUrl(updated.profilePhoto);
+    }
 
     return NextResponse.json({ message: "Profile updated successfully!", data: updated });
   } catch (error) {

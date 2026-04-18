@@ -26,8 +26,8 @@ export class LocalUploadProvider implements UploadProvider {
     // Write file
     await fs.writeFile(filePath, buffer);
 
-    // Return the public URL
-    return `/uploads/${type === "gym" ? "gyms" : "users"}/${filename}`;
+    // Return strictly the object key (relative path)
+    return `uploads/${type === "gym" ? "gyms" : "users"}/${filename}`;
   }
 }
 
@@ -79,8 +79,11 @@ export class ImageKitProvider implements UploadProvider {
       throw new Error(`ImageKit upload failed: ${res.statusText}`);
     }
 
-    const data = await res.json();
-    return data.url;
+    const fileResponse= await res.json()
+    console.log(fileResponse)
+
+    // Return strictly the object key (relative path)
+    return `gym-saas/${type === "gym" ? "gyms" : "users"}/${fileResponse.name}`;
   }
 }
 
@@ -100,3 +103,44 @@ export class UploadService {
 export const uploadService = new UploadService(
   process.env.IMAGEKIT_PRIVATE_KEY ? new ImageKitProvider() : new LocalUploadProvider()
 );
+
+export function getFileUrl(key: string | null | undefined): string {
+  if (!key) return "";
+  
+  // Backward compatibility check for external URLs (like Google Auth avatars)
+  if (key.startsWith("http") && !key.includes("imagekit.io")) return key; 
+  if (key.startsWith("data:")) return key;
+
+  // Ensure it's a raw relative key before deciding the domain
+  const cleanKey = extractFileKey(key);
+
+  if (cleanKey.startsWith("gym-saas/")) {
+    const endpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || process.env.IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/your_id";
+    const cleanEndpoint = endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
+    return `${cleanEndpoint}${cleanKey}`;
+  }
+  
+  if (cleanKey.startsWith("uploads/")) {
+    return `/${cleanKey}`;
+  }
+  
+  // Legacy short key format fallback (if they just look like `gyms/...`)
+  if (!cleanKey.startsWith("/")) {
+    return `/uploads/${cleanKey}`;
+  }
+
+  return cleanKey.startsWith("/") ? cleanKey : `/${cleanKey}`;
+}
+
+export function extractFileKey(url: string | null | undefined): string {
+  if (!url) return "";
+
+  if (url.includes("/gym-saas/")) {
+    return "gym-saas/" + url.split("/gym-saas/")[1]; 
+  }
+  if (url.includes("/uploads/")) {
+    return "uploads/" + url.split("/uploads/")[1];
+  }
+
+  return url;
+}

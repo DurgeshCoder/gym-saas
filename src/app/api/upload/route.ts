@@ -19,8 +19,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "No file provided" }, { status: 400 });
     }
     
-    if (file.size > 100 * 1024) {
-      return NextResponse.json({ message: "Image must be less than 100KB" }, { status: 400 });
+    if (file.size > 300 * 1024) {
+      return NextResponse.json({ message: "Image must be less than 300KB" }, { status: 400 });
     }
 
     if (!file.type.startsWith("image/")) {

@@ -273,8 +273,8 @@ export default function OwnerSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 100 * 1024) {
-      toast.error("Image size must be strictly less than 100KB.");
+    if (file.size > 300 * 1024) {
+      toast.error("Image size must be strictly less than 300KB.");
       return;
     }
 
@@ -560,7 +560,7 @@ export default function OwnerSettingsPage() {
                         </div>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-2">
-                        Must be a perfect square, &lt; 100KB, max 500x500px.
+                        Must be a perfect square, &lt; 300KB, max 500x500px.
                       </p>
                     </div>
 

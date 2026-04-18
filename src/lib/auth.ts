@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { getFileUrl } from "@/services/upload-service";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,7 +31,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
           gymId: user.gymId,
-          image: user.profilePhoto, // Maps to NextAuth session.user.image
+          image: getFileUrl(user.profilePhoto), // Maps to NextAuth session.user.image
         };
       }
     })

@@ -2,6 +2,7 @@ import { Users, TrendingUp, AlertCircle, Dumbbell } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getFileUrl } from "@/services/upload-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
@@ -127,7 +128,7 @@ export default async function OwnerDashboardPage() {
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-secondary border border-border shadow-sm overflow-hidden flex items-center justify-center font-bold text-muted-foreground uppercase flex-shrink-0">
                       {member.profilePhoto ? (
-                        <img src={member.profilePhoto} alt={member.name} className="w-full h-full object-cover" />
+                        <img src={getFileUrl(member.profilePhoto)} alt={member.name} className="w-full h-full object-cover" />
                       ) : (
                         member.name.substring(0, 2)
                       )}

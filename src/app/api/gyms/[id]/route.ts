@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,6 +20,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     if (!gym) {
       return NextResponse.json({ message: "Gym not found" }, { status: 404 });
+    }
+
+    if (gym.logo) {
+      gym.logo = getFileUrl(gym.logo);
     }
 
     return NextResponse.json(gym);

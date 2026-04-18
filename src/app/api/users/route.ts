@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -70,7 +71,12 @@ export async function GET(req: Request) {
       prisma.user.count({ where }),
     ]);
 
-    return NextResponse.json({ data: users, page, limit, total, totalPages: Math.ceil(total / limit) });
+    const formattedUsers = users.map(user => ({
+      ...user,
+      profilePhoto: getFileUrl(user.profilePhoto)
+    }));
+
+    return NextResponse.json({ data: formattedUsers, page, limit, total, totalPages: Math.ceil(total / limit) });
   } catch (error: any) {
     return NextResponse.json({ message: "Error fetching users" }, { status: 500 });
   }

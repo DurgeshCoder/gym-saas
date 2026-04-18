@@ -29,7 +29,7 @@ interface PaymentRecord {
   paymentMethod: string;
   status: string;
   createdAt: string;
-  user: { name: string; email: string };
+  user: { name: string; email: string; profilePhoto?: string | null };
   subscription?: {
     id: string;
     plan: { name: string };
@@ -203,8 +203,12 @@ export default function OwnerPaymentsPage() {
       header: "Member",
       render: (p) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-500">
-            {p.user.name.charAt(0)}
+          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-500 overflow-hidden shrink-0">
+            {p.user.profilePhoto ? (
+              <img src={p.user.profilePhoto} alt={p.user.name} className="w-full h-full object-cover" />
+            ) : (
+              p.user.name.charAt(0)
+            )}
           </div>
           <div>
             <p className="font-semibold text-slate-900 dark:text-white line-clamp-1">{p.user.name}</p>

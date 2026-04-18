@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -62,6 +63,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     if (!user || user.gymId !== gymId) {
       return NextResponse.json({ message: "User not found in your gym" }, { status: 404 });
+    }
+
+    if (user.profilePhoto) {
+      user.profilePhoto = getFileUrl(user.profilePhoto);
     }
 
     return NextResponse.json(user);

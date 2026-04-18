@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -57,7 +58,7 @@ export async function GET(req: Request) {
       prisma.payment.findMany({
         where,
         include: {
-          user: { select: { name: true, email: true } },
+          user: { select: { name: true, email: true, profilePhoto: true } },
           subscription: {
             include: {
               plan: { select: { name: true } },
@@ -71,8 +72,15 @@ export async function GET(req: Request) {
       prisma.payment.count({ where }),
     ]);
 
+    const formattedPayments = payments.map((payment: any) => {
+      if (payment.user?.profilePhoto) {
+        payment.user.profilePhoto = getFileUrl(payment.user.profilePhoto);
+      }
+      return payment;
+    });
+
     return NextResponse.json({
-      data: payments,
+      data: formattedPayments,
       page,
       limit,
       total,

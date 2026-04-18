@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { sendEmail } from "@/services/emailService";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -39,7 +40,14 @@ export async function GET(req: Request) {
       orderBy: { endDate: "asc" },
     });
 
-    return NextResponse.json({ data: subscriptions });
+    const formattedSubscriptions = subscriptions.map((sub: any) => {
+      if (sub.user?.profilePhoto) {
+        sub.user.profilePhoto = getFileUrl(sub.user.profilePhoto);
+      }
+      return sub;
+    });
+
+    return NextResponse.json({ data: formattedSubscriptions });
   } catch (error: any) {
     console.error("Fetch expiring subscriptions error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });

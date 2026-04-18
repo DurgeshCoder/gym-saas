@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -23,7 +24,14 @@ export async function GET(req: Request) {
       orderBy: { sentAt: "desc" },
     });
 
-    return NextResponse.json({ data: logs });
+    const formattedLogs = logs.map((log: any) => {
+      if (log.user?.profilePhoto) {
+        log.user.profilePhoto = getFileUrl(log.user.profilePhoto);
+      }
+      return log;
+    });
+
+    return NextResponse.json({ data: formattedLogs });
   } catch (error: any) {
     console.error("Fetch notification history error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });

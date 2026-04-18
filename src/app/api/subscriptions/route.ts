@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getFileUrl } from "@/services/upload-service";
 
 export async function GET(req: Request) {
   try {
@@ -69,7 +70,14 @@ export async function GET(req: Request) {
       prisma.subscription.count({ where }),
     ]);
 
-    return NextResponse.json({ data: subscriptions, page, limit, total, totalPages: Math.ceil(total / limit) });
+    const formattedSubscriptions = subscriptions.map((sub: any) => {
+      if (sub.user?.profilePhoto) {
+        sub.user.profilePhoto = getFileUrl(sub.user.profilePhoto);
+      }
+      return sub;
+    });
+
+    return NextResponse.json({ data: formattedSubscriptions, page, limit, total, totalPages: Math.ceil(total / limit) });
   } catch (error: any) {
     console.error("Fetch subscriptions error:", error);
     return NextResponse.json({ message: "Error fetching subscriptions" }, { status: 500 });

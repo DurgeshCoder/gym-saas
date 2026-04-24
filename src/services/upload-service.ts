@@ -3,16 +3,17 @@ import path from "path";
 import crypto from "crypto";
 
 export interface UploadProvider {
-  upload(file: File, type: "gym" | "user", userId: string): Promise<string>;
+  upload(file: File, type: "gym" | "user" | "exercise", userId: string): Promise<string>;
 }
 
 export class LocalUploadProvider implements UploadProvider {
-  async upload(file: File, type: "gym" | "user", userId: string): Promise<string> {
+  async upload(file: File, type: "gym" | "user" | "exercise", userId: string): Promise<string> {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // Create target directory based on type
-    const uploadDir = path.join(process.cwd(), "public", "uploads", type === "gym" ? "gyms" : "users");
+    const folderName = type === "gym" ? "gyms" : type === "exercise" ? "exercises" : "users";
+    const uploadDir = path.join(process.cwd(), "public", "uploads", folderName);
 
     // Ensure directory exists
     await fs.mkdir(uploadDir, { recursive: true });
@@ -27,7 +28,7 @@ export class LocalUploadProvider implements UploadProvider {
     await fs.writeFile(filePath, buffer);
 
     // Return strictly the object key (relative path)
-    return `uploads/${type === "gym" ? "gyms" : "users"}/${filename}`;
+    return `uploads/${folderName}/${filename}`;
   }
 }
 
@@ -42,7 +43,7 @@ export class ImageKitProvider implements UploadProvider {
     this.urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT || "";
   }
 
-  async upload(file: File, type: "gym" | "user", userId: string): Promise<string> {
+  async upload(file: File, type: "gym" | "user" | "exercise", userId: string): Promise<string> {
     if (!this.privateKey) {
       throw new Error("ImageKit missing credentials. IMAGEKIT_PRIVATE_KEY is required.");
     }
@@ -56,7 +57,8 @@ export class ImageKitProvider implements UploadProvider {
     const extension = path.extname(file.name) || (file.type === "image/png" ? ".png" : ".jpg");
     const filename = `${userId}-${uniqueSuffix}${extension}`;
     
-    const folder = `/gym-saas/${type === "gym" ? "gyms" : "users"}`;
+    const folderName = type === "gym" ? "gyms" : type === "exercise" ? "exercises" : "users";
+    const folder = `/gym-saas/${folderName}`;
 
     const formData = new FormData();
     formData.append("file", base64File);
@@ -83,7 +85,7 @@ export class ImageKitProvider implements UploadProvider {
     console.log(fileResponse)
 
     // Return strictly the object key (relative path)
-    return `gym-saas/${type === "gym" ? "gyms" : "users"}/${fileResponse.name}`;
+    return `gym-saas/${folderName}/${fileResponse.name}`;
   }
 }
 
@@ -94,7 +96,7 @@ export class UploadService {
     this.provider = provider;
   }
 
-  async upload(file: File, type: "gym" | "user", userId: string): Promise<string> {
+  async upload(file: File, type: "gym" | "user" | "exercise", userId: string): Promise<string> {
     return this.provider.upload(file, type, userId);
   }
 }

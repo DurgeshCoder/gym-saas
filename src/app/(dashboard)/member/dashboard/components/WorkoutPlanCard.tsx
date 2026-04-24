@@ -21,6 +21,8 @@ import {
   AlertTriangle,
   History,
   Info,
+  Flame,
+  Zap,
 } from "lucide-react";
 import { MemberDashboardData, MemberWorkoutPlansData } from "@/lib/queries/member";
 import { cn } from "@/lib/utils";
@@ -585,6 +587,121 @@ function NoPlanState() {
   );
 }
 
+// ─── Today's workout helper (pure, no hooks) ─────────────────────────────────
+function computeTodayDay(plan: SinglePlan): any | null {
+  const days = plan.workoutPlan.days ?? [];
+  if (!days.length || !plan.startDate) return null;
+  const start = new Date(plan.startDate);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const elapsed = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const idx = Math.max(0, elapsed) % days.length;
+  return days[idx] ?? null;
+}
+
+// ─── Today's Workout Banner ───────────────────────────────────────────────────
+function TodaysWorkoutBanner({ todayDay }: { todayDay: any }) {
+  if (!todayDay) return null;
+  const isRestDay = !todayDay.exercises || todayDay.exercises.length === 0;
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <div className={cn(
+      "rounded-2xl border overflow-hidden shadow-sm",
+      isRestDay
+        ? "border-border/60 bg-muted/20"
+        : "border-primary/20 bg-gradient-to-br from-primary/[0.06] via-primary/[0.03] to-transparent"
+    )}>
+      {/* Header */}
+      <div className={cn(
+        "flex items-center justify-between gap-3 px-5 py-4 border-b",
+        isRestDay ? "border-border/50 bg-muted/30" : "border-primary/15 bg-primary/[0.06]"
+      )}>
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
+            isRestDay ? "bg-muted border border-border/50" : "bg-primary/15 border border-primary/20"
+          )}>
+            {isRestDay
+              ? <Bed className="w-5 h-5 text-muted-foreground" />
+              : <Flame className="w-5 h-5 text-primary" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "text-xs font-bold uppercase tracking-widest",
+                isRestDay ? "text-muted-foreground" : "text-primary"
+              )}>
+                Today&apos;s Workout
+              </span>
+              <span className="text-[10px] font-medium bg-muted/60 border border-border/50 rounded px-1.5 py-0.5 text-muted-foreground">
+                Day {todayDay.dayNumber}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-foreground mt-0.5">
+              {isRestDay ? "Rest & Recovery Day" : (todayDay.title || `Day ${todayDay.dayNumber}`)}
+            </p>
+          </div>
+        </div>
+        <span className="text-[11px] text-muted-foreground hidden sm:block shrink-0">{today}</span>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 py-4">
+        {isRestDay ? (
+          <div className="flex items-start gap-3">
+            <div className="text-3xl">🛌</div>
+            <div>
+              <p className="font-medium text-foreground">Take it easy today.</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Rest is where growth happens. Hydrate, stretch, and recover.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {todayDay.notes && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
+                <StickyNote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800 dark:text-amber-300">{todayDay.notes}</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              {todayDay.exercises.map((ex: any, idx: number) => (
+                <div
+                  key={ex.id}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors"
+                >
+                  <span className="w-6 h-6 rounded-md bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center shrink-0 border border-primary/20">
+                    {idx + 1}
+                  </span>
+                  <span className="text-sm font-medium text-foreground flex-1 truncate">{ex.name}</span>
+                  <span className="text-xs font-semibold text-muted-foreground shrink-0">{ex.sets} × {ex.reps}</span>
+                  <span className="text-[11px] text-muted-foreground/70 shrink-0">{ex.restTime}s</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{todayDay.exercises.length}</span>{" "}
+                {todayDay.exercises.length === 1 ? "exercise" : "exercises"} today
+              </span>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                <Zap className="w-3.5 h-3.5" /> Stay focused!
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Full-page workout plan view (for /member/workout-plan route) ─────────────
 export function WorkoutPlanView({
   activePlan,
@@ -593,8 +710,17 @@ export function WorkoutPlanView({
   activePlan: SinglePlan | null;
   historyPlans: SinglePlan[];
 }) {
+  const todayDay = activePlan ? computeTodayDay(activePlan) : null;
+
   return (
     <div className="space-y-8">
+      {/* ── Today's Workout Banner ─────────────────────────────────────── */}
+      {activePlan && todayDay && (
+        <section>
+          <TodaysWorkoutBanner todayDay={todayDay} />
+        </section>
+      )}
+
       {/* Active plan section */}
       <section>
         <div className="flex items-center gap-2 mb-4">

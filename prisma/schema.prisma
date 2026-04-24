@@ -264,6 +264,8 @@ model Exercise {
   reps         String     // String for flexibility (e.g., "10-12", "To failure")
   restTime     Int        // Rest time in seconds
   notes        String?    @db.Text
+  videoUrl     String?    @db.Text // Can be YouTube link or ImageKit path
+  videoType    String?    // e.g., "YOUTUBE" or "IMAGEKIT"
   order        Int        // Sorting order
   
   workoutDayId String

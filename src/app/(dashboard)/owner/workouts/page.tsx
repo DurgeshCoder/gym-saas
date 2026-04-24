@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Dumbbell, UserPlus } from "lucide-react";
+import { Plus, Dumbbell, UserPlus, Eye } from "lucide-react";
 import { DataTable, type Column, SearchFilterBar } from "@/components/shared";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -101,6 +101,12 @@ export default function OwnerWorkoutsPage() {
                     >
                         <UserPlus className="w-3.5 h-3.5" /> Assign
                     </Button>
+                    <Link
+                        href={`/owner/workouts/${p.id}`}
+                        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 border-0 flex items-center gap-1.5")}
+                    >
+                        <Eye className="w-3.5 h-3.5" /> View
+                    </Link>
                     <Link
                         href={`/owner/workouts/${p.id}/edit`}
                         className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 border-0 flex items-center gap-1.5")}

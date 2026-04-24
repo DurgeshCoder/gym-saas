@@ -13,23 +13,31 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const type = formData.get("type") as "gym" | "user";
+    const type = formData.get("type") as "gym" | "user" | "exercise";
 
     if (!file) {
       return NextResponse.json({ message: "No file provided" }, { status: 400 });
     }
     
-    if (file.size > 300 * 1024) {
-      return NextResponse.json({ message: "Image must be less than 300KB" }, { status: 400 });
-    }
-
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ message: "File must be an image" }, { status: 400 });
-    }
-
-    const validTypes = ["gym", "user"];
+    const validTypes = ["gym", "user", "exercise"];
     if (!type || !validTypes.includes(type)) {
       return NextResponse.json({ message: "Invalid upload type" }, { status: 400 });
+    }
+
+    if (type === "exercise") {
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ message: "Exercise media must be less than 10MB" }, { status: 400 });
+      }
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+         return NextResponse.json({ message: "File must be an image, gif, or video" }, { status: 400 });
+      }
+    } else {
+      if (file.size > 300 * 1024) {
+        return NextResponse.json({ message: "Image must be less than 300KB" }, { status: 400 });
+      }
+      if (!file.type.startsWith("image/")) {
+        return NextResponse.json({ message: "File must be an image" }, { status: 400 });
+      }
     }
 
     const userId = (session.user as any).id;

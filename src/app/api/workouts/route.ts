@@ -46,6 +46,8 @@ export async function POST(req: Request) {
                                 reps: ex.reps,
                                 restTime: ex.restTime,
                                 notes: ex.notes,
+                                videoUrl: ex.videoUrl,
+                                videoType: ex.videoType,
                                 order: ex.order
                             }))
                         }

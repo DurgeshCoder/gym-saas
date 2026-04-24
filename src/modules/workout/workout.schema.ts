@@ -16,6 +16,8 @@ export const createPlanSchema = z.object({
             reps: z.string(),
             restTime: z.number().int(),
             notes: z.string().optional(),
+            videoUrl: z.string().optional(),
+            videoType: z.enum(["YOUTUBE", "IMAGEKIT"]).optional(),
             order: z.number().int(),
         }))
     }))

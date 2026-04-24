@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getMemberDashboardData } from "@/lib/queries/member";
 import { WorkoutPlanCard } from "../dashboard/components/WorkoutPlanCard";
+import { Dumbbell } from "lucide-react";
 
 export const metadata = {
   title: "My Workout Plan | Gym SaaS",
@@ -16,22 +17,38 @@ export default async function WorkoutPlanPage() {
   }
 
   const role = (session.user as any).role;
-  if (role !== "MEMBER" && role !== "GYM_OWNER" && role !== "SUPER_ADMIN" && role !== "TRAINER") {
+  if (
+    role !== "MEMBER" &&
+    role !== "GYM_OWNER" &&
+    role !== "SUPER_ADMIN" &&
+    role !== "TRAINER"
+  ) {
     redirect("/login");
   }
 
-  const dashboardData = await getMemberDashboardData((session.user as any).id);
+  const dashboardData = await getMemberDashboardData(
+    (session.user as any).id
+  );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-10">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Workout Plan details</h1>
-        <p className="text-muted-foreground">Follow your personalized workout routines step by step.</p>
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-16">
+      {/* ── Page Header ──────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <Dumbbell className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground leading-tight">
+            My Workout Plan
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Follow your personalized training routine step by step.
+          </p>
+        </div>
       </div>
 
-      <div className="h-full">
-        <WorkoutPlanCard memberWorkoutPlan={dashboardData.workoutPlan} />
-      </div>
+      {/* ── Plan Card ─────────────────────────────────────────────────── */}
+      <WorkoutPlanCard memberWorkoutPlan={dashboardData.workoutPlan} />
     </div>
   );
 }

@@ -72,32 +72,71 @@ export default async function MemberDashboardPage() {
         </Card>
 
         {/* Workout Plan Summary Card */}
-        <Card className="min-w-[280px] md:min-w-0 shrink-0 snap-center flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110">
+        <Card className="min-w-[280px] md:min-w-0 shrink-0 snap-center flex flex-col relative overflow-hidden group hover:shadow-md transition-all border-border/70">
+          {/* Accent top border */}
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-primary/50 to-transparent" />
+          <div className="absolute top-0 right-0 p-4 opacity-[0.04] pointer-events-none transition-transform duration-300 group-hover:scale-110">
             <Dumbbell className="w-24 h-24" />
           </div>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-primary" />
+              <CardTitle className="text-base font-semibold flex items-center gap-2 text-foreground">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Dumbbell className="w-3.5 h-3.5 text-primary" />
+                </div>
                 Workout Plan
               </CardTitle>
-              {workout && <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">{workout.status}</Badge>}
+              {workout && (
+                <Badge
+                  variant="outline"
+                  className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
+                >
+                  {workout.status}
+                </Badge>
+              )}
             </div>
           </CardHeader>
-          <CardContent className="flex-1 relative z-10">
+          <CardContent className="flex-1 relative z-10 pt-0">
             {workout ? (
-              <div className="space-y-1">
-                <p className="font-semibold text-xl">{workout.workoutPlan.name}</p>
-                <p className="text-sm text-muted-foreground">{workout.workoutPlan.duration} Days &bull; <span className="capitalize">{workout.workoutPlan.difficulty.toLowerCase()}</span></p>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-bold text-lg text-foreground leading-tight">
+                    {workout.workoutPlan.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 capitalize">
+                    {workout.workoutPlan.difficulty.charAt(0) + workout.workoutPlan.difficulty.slice(1).toLowerCase()}
+                    {workout.workoutPlan.goal && (
+                      <> · {workout.workoutPlan.goal.replace(/_/g, " ").toLowerCase()}</>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-medium bg-muted/60 border border-border/50 rounded-md px-2 py-0.5 text-muted-foreground">
+                    {workout.workoutPlan.duration} days
+                  </span>
+                  <span className="text-[11px] font-medium bg-muted/60 border border-border/50 rounded-md px-2 py-0.5 text-muted-foreground">
+                    {workout.workoutPlan.days?.length ?? 0} sessions
+                  </span>
+                </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">No active workout plan assigned.</p>
+              <div className="space-y-1.5">
+                <p className="text-sm text-muted-foreground">
+                  No workout plan assigned yet.
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Speak to your trainer to get started.
+                </p>
+              </div>
             )}
           </CardContent>
-          <CardFooter className="pt-4 border-t relative z-10 bg-muted/10">
-            <Link href="/member/workout-plan" className="w-full flex items-center justify-between text-sm font-medium hover:text-primary py-2 px-1">
-              View Details <ChevronRight className="w-4 h-4" />
+          <CardFooter className="pt-3 border-t border-border/50 relative z-10">
+            <Link
+              href="/member/workout-plan"
+              className="w-full flex items-center justify-between text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-1.5 px-1 group/link"
+            >
+              <span>{workout ? "View Full Plan" : "Learn More"}</span>
+              <ChevronRight className="w-4 h-4 transition-transform group-hover/link:translate-x-0.5" />
             </Link>
           </CardFooter>
         </Card>

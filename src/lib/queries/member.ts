@@ -89,6 +89,33 @@ export async function getMemberPayments(userId: string) {
 
 export type MemberPaymentsData = Awaited<ReturnType<typeof getMemberPayments>>;
 
+// All assigned workout plans for a member (all statuses — used for full plan page)
+export async function getMemberWorkoutPlans(userId: string) {
+  return await prisma.memberWorkoutPlan.findMany({
+    where: { userId },
+    include: {
+      workoutPlan: {
+        include: {
+          days: {
+            include: {
+              exercises: {
+                orderBy: { order: "asc" },
+              },
+            },
+            orderBy: { dayNumber: "asc" },
+          },
+          creator: {
+            select: { name: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export type MemberWorkoutPlansData = Awaited<ReturnType<typeof getMemberWorkoutPlans>>;
+
 export async function getAllMemberSubscriptions(userId: string) {
   return await prisma.subscription.findMany({
     where: { userId },

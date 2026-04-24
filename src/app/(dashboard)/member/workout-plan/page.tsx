@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getMemberDashboardData } from "@/lib/queries/member";
-import { WorkoutPlanCard } from "../dashboard/components/WorkoutPlanCard";
+import { getMemberWorkoutPlans } from "@/lib/queries/member";
+import { WorkoutPlanView } from "../dashboard/components/WorkoutPlanCard";
 import { Dumbbell } from "lucide-react";
 
 export const metadata = {
@@ -26,9 +26,11 @@ export default async function WorkoutPlanPage() {
     redirect("/login");
   }
 
-  const dashboardData = await getMemberDashboardData(
-    (session.user as any).id
-  );
+  const allPlans = await getMemberWorkoutPlans((session.user as any).id);
+
+  // Separate active vs historical
+  const activePlan = allPlans.find((p) => p.status === "ACTIVE") ?? null;
+  const historyPlans = allPlans.filter((p) => p.status !== "ACTIVE");
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-16">
@@ -48,7 +50,7 @@ export default async function WorkoutPlanPage() {
       </div>
 
       {/* ── Plan Card ─────────────────────────────────────────────────── */}
-      <WorkoutPlanCard memberWorkoutPlan={dashboardData.workoutPlan} />
+      <WorkoutPlanView activePlan={activePlan} historyPlans={historyPlans} />
     </div>
   );
 }

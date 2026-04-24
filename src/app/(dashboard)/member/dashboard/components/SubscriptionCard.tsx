@@ -33,6 +33,9 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
 
   const { plan, startDate, endDate, active, payments } = subscription;
   const daysRemaining = Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)));
+  const isExpired = new Date(endDate) < new Date();
+  // Show the pay button ONLY when the subscription is active AND not expired
+  const canPay = active && !isExpired;
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
   };
@@ -105,7 +108,17 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
             )}
           </div>
           <div className="pt-2">
-            <RazorpayButton amount={plan.price} subscriptionId={subscription.id} />
+            {canPay ? (
+              <RazorpayButton amount={plan.price} subscriptionId={subscription.id} />
+            ) : (
+              <div className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg border border-border/60 bg-muted/40 text-sm font-medium text-muted-foreground cursor-not-allowed select-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                {isExpired ? "Subscription Expired" : "Subscription Inactive"}
+              </div>
+            )}
           </div>
         </div>
 

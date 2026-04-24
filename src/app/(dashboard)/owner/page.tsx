@@ -1,4 +1,4 @@
-import { Users, TrendingUp, AlertCircle, Dumbbell } from "lucide-react";
+import { Users, TrendingUp, AlertCircle, Dumbbell, Banknote } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { RevenueChart } from "./RevenueChart";
+import { ActiveMembersPieChart } from "./ActiveMembersPieChart";
 
 export default async function OwnerDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -20,9 +21,12 @@ export default async function OwnerDashboardPage() {
   const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Safely execute all queries concurrently to maximize speed if gymId exists
-  const [totalMembers, activeSubscriptions, revenueAgg, expiringSoon, recentMembers, paymentsLast6Months] = gymId ? await Promise.all([
+  const [totalMembers, activeSubscriptionsData, revenueAgg, expiringSoon, recentMembers, paymentsLast6Months] = gymId ? await Promise.all([
     prisma.user.count({ where: { gymId, role: "MEMBER" } }),
-    prisma.subscription.count({ where: { gymId, active: true, endDate: { gte: now } } }),
+    prisma.subscription.findMany({ 
+      where: { gymId, active: true, endDate: { gte: now } },
+      include: { plan: true }
+    }),
     prisma.payment.aggregate({ _sum: { amount: true }, where: { gymId, status: "SUCCESS", createdAt: { gte: startOfMonth } } }),
     prisma.subscription.count({ where: { gymId, active: true, endDate: { gte: now, lte: nextWeek } } }),
     prisma.user.findMany({
@@ -45,9 +49,23 @@ export default async function OwnerDashboardPage() {
       },
       select: { amount: true, createdAt: true }
     })
-  ]) : [0, 0, { _sum: { amount: 0 } }, 0, [], []];
+  ]) : [0, [], { _sum: { amount: 0 } }, 0, [], []];
 
   const monthlyRevenue = revenueAgg._sum.amount || 0;
+
+  const activeSubscriptions = activeSubscriptionsData.length;
+  // Unique users with active subscriptions
+  const activeMembersCount = new Set(activeSubscriptionsData.map(s => s.userId)).size;
+  const inactiveMembersCount = Math.max(0, totalMembers - activeMembersCount);
+
+  // MRR Calculation based on actual Plan price spread over 30 days
+  const mrr = activeSubscriptionsData.reduce((acc, sub) => {
+    // If a plan has 0 price or no duration, handle it safely
+    if (!sub.plan || !sub.plan.price || !sub.plan.duration) return acc;
+    // Calculate Monthly Recurring Revenue for this plan
+    const monthlyPrice = (sub.plan.price / sub.plan.duration) * 30;
+    return acc + monthlyPrice;
+  }, 0);
 
   // Process chart data for the last 6 months
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -72,7 +90,8 @@ export default async function OwnerDashboardPage() {
   const stats = [
     { name: "Total Members", value: totalMembers.toString(), icon: Users, color: "text-blue-600", bg: "bg-blue-100", halo: "from-blue-500/20" },
     { name: "Active Subs", value: activeSubscriptions.toString(), icon: Dumbbell, color: "text-emerald-600", bg: "bg-emerald-100", halo: "from-emerald-500/20" },
-    { name: "Monthly Rev", value: `₹${monthlyRevenue.toLocaleString()}`, icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100", halo: "from-purple-500/20" },
+    { name: "MRR", value: `₹${Math.round(mrr).toLocaleString()}`, icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-100", halo: "from-purple-500/20" },
+    { name: "Collected (MTD)", value: `₹${monthlyRevenue.toLocaleString()}`, icon: Banknote, color: "text-indigo-600", bg: "bg-indigo-100", halo: "from-indigo-500/20" },
     { name: "Expiring Soon", value: expiringSoon.toString(), icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-100", halo: "from-rose-500/20" },
   ];
 
@@ -93,7 +112,7 @@ export default async function OwnerDashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
         {stats.map((stat) => (
           <Card key={stat.name} className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group bg-card">
             <div className={`absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br ${stat.halo} to-transparent blur-2xl rounded-full transition-transform group-hover:scale-150 duration-500`} />
@@ -110,7 +129,16 @@ export default async function OwnerDashboardPage() {
         ))}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="lg:col-span-2 min-h-[300px]">
+          <RevenueChart data={chartData} />
+        </div>
+        <div className="lg:col-span-1 min-h-[300px]">
+          <ActiveMembersPieChart activeCount={activeMembersCount} inactiveCount={inactiveMembersCount} />
+        </div>
+      </div>
+
+      <div className="mt-6">
         <Card className="border-border/50 shadow-sm flex flex-col">
           <CardHeader className="pb-4 sm:pb-5">
             <div className="flex items-center justify-between">
@@ -157,10 +185,6 @@ export default async function OwnerDashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        <div className="min-h-[300px]">
-          <RevenueChart data={chartData} />
-        </div>
       </div>
     </div>
   );

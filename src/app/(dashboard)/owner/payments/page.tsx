@@ -411,8 +411,8 @@ export default function OwnerPaymentsPage() {
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
                 <div className="grid gap-2">
-                  {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
-                    selectedUserFull.subscriptions.map(sub => {
+                  {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.filter(sub => sub.active).length > 0 ? (
+                    selectedUserFull.subscriptions.filter(sub => sub.active).map(sub => {
                       const finalPrice = getDiscountedPrice(sub.plan);
                       return (
                         <div key={sub.id} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"}`} onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: finalPrice.toString() })}>
@@ -428,7 +428,7 @@ export default function OwnerPaymentsPage() {
                       );
                     })
                   ) : (
-                    <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">No subscription found. Create a subscription first to extend it.</p>
+                    <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">No active subscription found. Create a subscription first to extend it.</p>
                   )}
                 </div>
               </div>

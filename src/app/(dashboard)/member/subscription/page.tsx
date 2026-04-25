@@ -30,10 +30,10 @@ export default async function SubscriptionPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-1  gap-6">
-        {subscriptions.map((sub: any) => (
+        {subscriptions.filter((sub: any) => sub.active).map((sub: any) => (
           <SubscriptionCard key={sub.id} subscription={sub} />
         ))}
-        {subscriptions.length === 0 && (
+        {subscriptions.filter((sub: any) => sub.active).length === 0 && (
           <SubscriptionCard subscription={null as any} />
         )}
       </div>

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Pagination } from "@/components/shared";
 
 export default function OwnerBroadcastPage() {
   const [filter, setFilter] = useState("all");
@@ -21,18 +22,21 @@ export default function OwnerBroadcastPage() {
   
   const [searchHistory, setSearchHistory] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [activeTab, setActiveTab] = useState("compose");
 
-  const fetchHistory = async (p = page, search = searchHistory) => {
+  const fetchHistory = async (p = page, search = searchHistory, size = pageSize) => {
     setLoadingHistory(true);
     try {
-      const res = await fetch(`/api/notifications/broadcast?page=${p}&limit=5&search=${encodeURIComponent(search)}`);
+      const res = await fetch(`/api/notifications/broadcast?page=${p}&limit=${size}&search=${encodeURIComponent(search)}`);
       if (res.ok) {
         const json = await res.json();
         setHistory(json.data || []);
         if (json.pagination) {
           setTotalPages(json.pagination.totalPages || 1);
+          setTotalItems(json.pagination.totalCount || 0);
         }
       }
     } finally {
@@ -50,9 +54,9 @@ export default function OwnerBroadcastPage() {
 
   useEffect(() => {
     if (activeTab === "history") {
-      fetchHistory(page, searchHistory);
+      fetchHistory(page, searchHistory, pageSize);
     }
-  }, [page, activeTab]);
+  }, [page, pageSize, activeTab]);
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,7 +233,7 @@ export default function OwnerBroadcastPage() {
                 <div className="p-8 text-center text-muted-foreground">No broadcast history found.</div>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto border-b border-border">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-medium border-b">
                         <tr>
@@ -262,27 +266,17 @@ export default function OwnerBroadcastPage() {
                       </tbody>
                     </table>
                   </div>
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </Button>
-                      <span className="text-sm font-medium text-muted-foreground">Page {page} of {totalPages}</span>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  )}
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    pageSize={pageSize}
+                    onPageChange={(p) => setPage(p)}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      setPage(1);
+                    }}
+                  />
                 </>
               )}
             </CardContent>

@@ -15,6 +15,7 @@ import { DataTable, type Column } from "@/components/shared";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,6 +51,13 @@ export default function RemindersPage() {
   const [channel, setChannel] = useState("WHATSAPP");
   const [message, setMessage] = useState("");
 
+  // History Pagination & Search
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPageSize, setHistoryPageSize] = useState(10);
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyTotalPages, setHistoryTotalPages] = useState(1);
+  const [historyTotalItems, setHistoryTotalItems] = useState(0);
+
   const fetchExpiring = useCallback(async () => {
     setLoading(true);
     try {
@@ -63,23 +71,37 @@ export default function RemindersPage() {
     }
   }, []);
 
-  const fetchLogs = useCallback(async () => {
+  const fetchLogs = useCallback(async (p = historyPage, s = historySearch, size = historyPageSize) => {
     setLoadingLogs(true);
     try {
-      const res = await fetch(`/api/subscriptions/reminders/history`);
+      const res = await fetch(`/api/subscriptions/reminders/history?page=${p}&limit=${size}&search=${encodeURIComponent(s)}`);
       if (res.ok) {
         const json = await res.json();
         setLogs(json.data || []);
+        if (json.pagination) {
+          setHistoryTotalPages(json.pagination.totalPages || 1);
+          setHistoryTotalItems(json.pagination.totalCount || 0);
+        }
       }
     } finally {
       setLoadingLogs(false);
     }
-  }, []);
+  }, [historyPage, historySearch, historyPageSize]);
 
   useEffect(() => {
     fetchExpiring();
-    fetchLogs();
-  }, [fetchExpiring, fetchLogs]);
+  }, [fetchExpiring]);
+
+  useEffect(() => {
+    fetchLogs(historyPage, historySearch);
+  }, [historyPage, fetchLogs]);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      fetchLogs(1, historySearch);
+    }, 500);
+    return () => clearTimeout(delayDebounce);
+  }, [historySearch, fetchLogs]);
 
   // Open modal and pre-fill message
   const openReminder = (s: ExpiringSub) => {
@@ -294,7 +316,15 @@ export default function RemindersPage() {
             onPageChange={() => {}}
           />
         </TabsContent>
-        <TabsContent value="history" className="mt-0">
+        <TabsContent value="history" className="mt-0 space-y-4">
+          <div className="flex justify-end">
+            <Input 
+              placeholder="Search by member name or message..." 
+              className="max-w-xs" 
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+            />
+          </div>
           <DataTable<LogEntry>
             columns={logColumns}
             data={logs}
@@ -303,11 +333,15 @@ export default function RemindersPage() {
             emptyIcon={<MessageSquare className="w-8 h-8 text-slate-400" />}
             emptyTitle="No Reminders Sent"
             emptyDescription="You haven't sent any manual reminders yet."
-            currentPage={1}
-            totalPages={1}
-            totalItems={logs.length}
-            pageSize={100}
-            onPageChange={() => {}}
+            currentPage={historyPage}
+            totalPages={historyTotalPages}
+            totalItems={historyTotalItems}
+            pageSize={historyPageSize}
+            onPageChange={(p) => setHistoryPage(p)}
+            onPageSizeChange={(size) => {
+              setHistoryPageSize(size);
+              setHistoryPage(1);
+            }}
           />
         </TabsContent>
       </Tabs>

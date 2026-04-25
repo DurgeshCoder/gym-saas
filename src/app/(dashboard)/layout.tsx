@@ -18,6 +18,7 @@ import {
   Utensils,
   Receipt,
   Bell,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,11 +41,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [gymName, setGymName] = useState<string | null>(null);
   const [gymLogo, setGymLogo] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const role: string = (session?.user as any)?.role || "MEMBER";
   const gymId: string | null = (session?.user as any)?.gymId || null;
 
-  // Fetch gym name for GYM_OWNER / TRAINER / MEMBER
+  // Fetch gym name & unread notifications
   useEffect(() => {
     if (gymId && role !== "SUPER_ADMIN") {
       fetch(`/api/gyms/${gymId}`)
@@ -55,9 +57,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })
         .catch(() => { });
     }
+
+    if (role === "MEMBER") {
+      fetch(`/api/member/notifications`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.unreadCount !== undefined) {
+             setUnreadCount(data.unreadCount);
+          }
+        })
+        .catch(() => { });
+    }
   }, [gymId, role]);
-
-
 
   // Navigation links per role
   const ownerLinks = [
@@ -68,6 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Diet Plans", href: "/owner/diets", icon: Utensils },
     { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
     { name: "Reminders", href: "/owner/subscriptions/reminders", icon: Bell },
+    { name: "Broadcast", href: "/owner/notifications", icon: MessageSquare },
     { name: "Payments", href: "/owner/payments", icon: CreditCard },
     { name: "Gym Settings", href: "/owner/settings", icon: Settings },
   ];
@@ -80,6 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const memberLinks = [
     { name: "Dashboard", href: "/member/dashboard", icon: LayoutDashboard },
+    { name: "Notifications", href: "/member/notifications", icon: Bell },
     { name: "My Subscription", href: "/member/subscription", icon: CreditCard },
     { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
     { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
@@ -170,9 +183,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           tooltip={link.name}
                           className={`font-medium h-12 ${isActive ? "bg-primary/10 text-primary" : ""}`}
                           render={
-                            <Link href={link.href} className="flex items-center gap-3">
-                              <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                              <span>{link.name}</span>
+                            <Link href={link.href} className="flex items-center justify-between w-full h-full group">
+                              <div className="flex items-center gap-3">
+                                <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
+                                <span>{link.name}</span>
+                              </div>
+                              {link.name === "Notifications" && unreadCount > 0 && (
+                                <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex shrink-0 shadow-sm animate-pulse">
+                                  {unreadCount > 99 ? "99+" : unreadCount}
+                                </span>
+                              )}
                             </Link>
                           }
                         />
@@ -238,7 +258,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Show top 4-5 priority links for mobile based on role to prevent overcrowding */}
             {links.filter(link => {
               // Prioritize key tabs for bottom nav as requested
-              const priorityNames = ['Dashboard', 'Members', 'My Members', 'Users & Staff', 'Payments', 'My Profile', 'Gym Settings', 'All Gyms'];
+              const priorityNames = ['Dashboard', 'Notifications', 'Members', 'My Members', 'Users & Staff', 'Payments', 'My Profile', 'Gym Settings', 'All Gyms'];
               return priorityNames.includes(link.name) || link.name.includes("Dashboard");
             }).slice(0, 5).map((link) => {
               const Icon = link.icon;
@@ -254,7 +274,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-xl"
                   )}
                 >
-                  <Icon className={cn("w-5 h-5", isActive ? "scale-110" : "scale-100")} />
+                  <div className="relative">
+                    <Icon className={cn("w-5 h-5", isActive ? "scale-110" : "scale-100")} />
+                    {link.name === "Notifications" && unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-2 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
+                    )}
+                  </div>
                   <span className="text-[10px] font-medium truncate max-w-[64px]">
                     {link.name.replace("My ", "").replace("Gym ", "").replace(" & Staff", "")}
                   </span>

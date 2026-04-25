@@ -390,6 +390,7 @@ enum NotificationChannel {
   EMAIL
   SMS
   WHATSAPP
+  IN_APP
 }
 
 model NotificationLog {
@@ -402,7 +403,9 @@ model NotificationLog {
   subscription   Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   
   channel        NotificationChannel
+  title          String?
   message        String              @db.Text
+  isRead         Boolean             @default(false)
   sentAt         DateTime            @default(now())
 
   @@index([gymId])

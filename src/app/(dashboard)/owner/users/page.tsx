@@ -785,14 +785,14 @@ export default function OwnerUsersPage() {
                         Recent Transactions
                       </h5>
                       {viewUserData.payments.length > 0 ? (
-                        <div className="overflow-hidden border border-border rounded-xl shadow-sm">
-                          <table className="w-full text-sm text-left">
+                        <div className="overflow-x-auto border border-border rounded-xl shadow-sm">
+                          <table className="w-full text-sm text-left min-w-[400px]">
                             <thead className="bg-muted/50 text-muted-foreground font-medium text-xs uppercase tracking-wider">
                               <tr>
-                                <th className="px-5 py-3">Date</th>
-                                <th className="px-5 py-3">Method</th>
-                                <th className="px-5 py-3">Amount</th>
-                                <th className="px-5 py-3 text-right">Status</th>
+                                <th className="px-5 py-3 whitespace-nowrap">Date</th>
+                                <th className="px-5 py-3 whitespace-nowrap">Method</th>
+                                <th className="px-5 py-3 whitespace-nowrap">Amount</th>
+                                <th className="px-5 py-3 text-right whitespace-nowrap">Status</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border bg-card">
@@ -801,16 +801,16 @@ export default function OwnerUsersPage() {
                                   key={p.id}
                                   className="hover:bg-muted/30 transition-colors"
                                 >
-                                  <td className="px-5 py-3 text-muted-foreground">
+                                  <td className="px-5 py-3 text-muted-foreground whitespace-nowrap">
                                     {new Date(p.createdAt).toLocaleDateString()}
                                   </td>
-                                  <td className="px-5 py-3 font-medium text-foreground">
+                                  <td className="px-5 py-3 font-medium text-foreground whitespace-nowrap">
                                     {p.paymentMethod}
                                   </td>
-                                  <td className="px-5 py-3 font-bold text-emerald-600 dark:text-emerald-400">
+                                  <td className="px-5 py-3 font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                                     ₹{p.amount}
                                   </td>
-                                  <td className="px-5 py-3 text-right">
+                                  <td className="px-5 py-3 text-right whitespace-nowrap">
                                     <span
                                       className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${p.status === "SUCCESS" ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400" : "text-muted-foreground bg-muted"}`}
                                     >

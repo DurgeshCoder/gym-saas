@@ -58,6 +58,52 @@ export default function OwnerBroadcastPage() {
     }
   }, [page, pageSize, activeTab]);
 
+  const templates = [
+    {
+      id: "gym_closure",
+      name: "Gym Closure / Holiday",
+      title: "Notice: Upcoming Gym Closure",
+      message: "Dear Members, please note that the gym will be closed on [Date] due to [Reason/Holiday]. We will resume regular operating hours the following day. Stay active and see you soon!"
+    },
+    {
+      id: "renew_subscription",
+      name: "Subscription Renewal Reminder",
+      title: "Action Required: Renew Your Subscription",
+      message: "Hi! This is a friendly reminder that your gym membership is expiring soon. Please renew your subscription at the front desk or via the app to avoid any interruption in your fitness journey!"
+    },
+    {
+      id: "new_equipment",
+      name: "New Equipment / Facility Upgrade",
+      title: "Exciting News: Facility Upgrades!",
+      message: "Great news! We've just installed new equipment on the gym floor for you to enjoy. Ask our trainers if you need help getting familiar with the new machines. Happy lifting!"
+    },
+    {
+      id: "class_announcement",
+      name: "New Class Announcement",
+      title: "New Fitness Class Available!",
+      message: "We are thrilled to announce our new [Class Name]! Join us every [Day of week] at [Time] for an amazing workout. Spots are limited, so book yours today."
+    },
+    {
+      id: "maintenance",
+      name: "Scheduled Maintenance",
+      title: "Notice: Scheduled Maintenance",
+      message: "We will be conducting scheduled maintenance on some of our equipment on [Date]. A few machines may be temporarily unavailable. We apologize for the inconvenience and appreciate your patience!"
+    }
+  ];
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (templateId === "none") {
+      setTitle("");
+      setMessage("");
+      return;
+    }
+    const template = templates.find((t) => t.id === templateId);
+    if (template) {
+      setTitle(template.title);
+      setMessage(template.message);
+    }
+  };
+
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !message.trim()) {
@@ -150,6 +196,22 @@ export default function OwnerBroadcastPage() {
                       </Select>
                     </div>
 
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold text-foreground">Message Template (Optional)</label>
+                      </div>
+                      <Select onValueChange={handleTemplateSelect}>
+                        <SelectTrigger className="w-full font-medium text-muted-foreground bg-muted/20 border-border/80">
+                          <SelectValue placeholder="Choose a template to quick-fill..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none" className="font-semibold text-foreground/80">None (Custom Message)</SelectItem>
+                          {templates.map(t => (
+                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-foreground">Notification Title</label>
                       <Input 

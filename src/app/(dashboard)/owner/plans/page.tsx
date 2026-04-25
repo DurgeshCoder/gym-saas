@@ -391,7 +391,7 @@ export default function OwnerPlansPage() {
               <label className="block text-sm font-medium text-foreground mb-1">Discount Config</label>
               <div className="flex gap-2">
                 <Input type="number" min="0" step="1" value={createData.discount} onChange={(e) => setCreateData({ ...createData, discount: e.target.value })} placeholder="0" className="w-2/3" />
-                <Select value={createData.discountType} onValueChange={(val) => setCreateData({ ...createData, discountType: val })}>
+                <Select value={createData.discountType} onValueChange={(val) => val && setCreateData({ ...createData, discountType: val })}>
                   <SelectTrigger className="w-1/3">
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
@@ -449,7 +449,7 @@ export default function OwnerPlansPage() {
               <label className="block text-sm font-medium text-foreground mb-1">Discount Config</label>
               <div className="flex gap-2">
                 <Input type="number" min="0" step="1" value={editData.discount} onChange={(e) => setEditData({ ...editData, discount: e.target.value })} placeholder="0" className="w-2/3" />
-                <Select value={editData.discountType} onValueChange={(val) => setEditData({ ...editData, discountType: val })}>
+                <Select value={editData.discountType} onValueChange={(val) => val && setEditData({ ...editData!, discountType: val })}>
                   <SelectTrigger className="w-1/3">
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>

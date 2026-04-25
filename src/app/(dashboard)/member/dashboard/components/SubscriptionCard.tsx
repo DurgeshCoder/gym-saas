@@ -85,7 +85,7 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
             {finalPrice < plan.price && (
               <p className="text-sm line-through text-muted-foreground/60">₹{plan.price}</p>
             )}
-            {plan.discount > 0 && (
+            {(plan.discount ?? 0) > 0 && (
               <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-800 ml-2">
                 {plan.discountType === "PERCENTAGE" ? `${plan.discount}% OFF` : `₹${plan.discount} OFF`}
               </Badge>

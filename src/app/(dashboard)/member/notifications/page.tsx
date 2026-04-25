@@ -127,7 +127,7 @@ export default function MemberNotificationsPage() {
           className="flex-1 rounded-xl shadow-sm h-11"
         />
         <div className="min-w-[160px]">
-          <Select value={filter} onValueChange={setFilter}>
+          <Select value={filter} onValueChange={(val) => val && setFilter(val)}>
             <SelectTrigger className="w-full rounded-xl shadow-sm h-11 border-input">
               <SelectValue placeholder="All Notifications" />
             </SelectTrigger>

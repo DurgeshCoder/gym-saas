@@ -91,8 +91,8 @@ export default function OwnerBroadcastPage() {
     }
   ];
 
-  const handleTemplateSelect = (templateId: string) => {
-    if (templateId === "none") {
+  const handleTemplateSelect = (templateId: string | null) => {
+    if (!templateId || templateId === "none") {
       setTitle("");
       setMessage("");
       return;
@@ -163,7 +163,7 @@ export default function OwnerBroadcastPage() {
                     
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-foreground">Target Audience</label>
-                      <Select value={filter} onValueChange={setFilter}>
+                      <Select value={filter} onValueChange={(val) => val && setFilter(val)}>
                         <SelectTrigger className="w-full font-medium">
                           <SelectValue placeholder="Select Audience" />
                         </SelectTrigger>

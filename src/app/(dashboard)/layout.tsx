@@ -28,6 +28,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -70,46 +71,109 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [gymId, role]);
 
-  // Navigation links per role
-  const ownerLinks = [
-    { name: "Dashboard", href: "/owner", icon: LayoutDashboard },
-    { name: "Users & Staff", href: "/owner/users", icon: Users },
-    { name: "Membership Plans", href: "/owner/plans", icon: Dumbbell },
-    { name: "Workout Plans", href: "/owner/workouts", icon: Activity },
-    { name: "Diet Plans", href: "/owner/diets", icon: Utensils },
-    { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
-    { name: "Reminders", href: "/owner/subscriptions/reminders", icon: Bell },
-    { name: "Broadcast", href: "/owner/notifications", icon: MessageSquare },
-    { name: "Payments", href: "/owner/payments", icon: CreditCard },
-    { name: "Gym Settings", href: "/owner/settings", icon: Settings },
+  // Navigation link groups per role (Industry Standard categorizations)
+  const ownerNavGroups = [
+    {
+      group: "Overview",
+      items: [
+        { name: "Dashboard", href: "/owner", icon: LayoutDashboard },
+      ]
+    },
+    {
+      group: "Management",
+      items: [
+        { name: "Users & Staff", href: "/owner/users", icon: Users },
+        { name: "Membership Plans", href: "/owner/plans", icon: Dumbbell },
+        { name: "Workout Plans", href: "/owner/workouts", icon: Activity },
+        { name: "Diet Plans", href: "/owner/diets", icon: Utensils },
+      ]
+    },
+    {
+      group: "Communication",
+      items: [
+        { name: "Reminders", href: "/owner/subscriptions/reminders", icon: Bell },
+        { name: "Broadcast", href: "/owner/notifications", icon: MessageSquare },
+      ]
+    },
+    {
+      group: "Finance & Operations",
+      items: [
+        { name: "Subscriptions", href: "/owner/subscriptions", icon: CalendarDays },
+        { name: "Payments", href: "/owner/payments", icon: CreditCard },
+      ]
+    },
+    {
+      group: "Settings",
+      items: [
+        { name: "Gym Settings", href: "/owner/settings", icon: Settings },
+      ]
+    }
   ];
 
-  const trainerLinks = [
-    { name: "My Dashboard", href: "/trainer", icon: LayoutDashboard },
-    { name: "My Members", href: "/trainer/members", icon: Users },
-    { name: "Bookings", href: "/trainer/bookings", icon: CalendarDays },
+  const trainerNavGroups = [
+    {
+      group: "Overview",
+      items: [
+        { name: "My Dashboard", href: "/trainer", icon: LayoutDashboard },
+      ]
+    },
+    {
+      group: "Management",
+      items: [
+        { name: "My Members", href: "/trainer/members", icon: Users },
+        { name: "Bookings", href: "/trainer/bookings", icon: CalendarDays },
+      ]
+    }
   ];
 
-  const memberLinks = [
-    { name: "Dashboard", href: "/member/dashboard", icon: LayoutDashboard },
-    { name: "Notifications", href: "/member/notifications", icon: Bell },
-    { name: "My Subscription", href: "/member/subscription", icon: CreditCard },
-    { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
-    { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
-    { name: "Payments", href: "/member/payments", icon: Receipt },
-    { name: "My Profile", href: "/member/profile", icon: Users },
+  const memberNavGroups = [
+    {
+      group: "Overview",
+      items: [
+        { name: "Dashboard", href: "/member/dashboard", icon: LayoutDashboard },
+        { name: "Notifications", href: "/member/notifications", icon: Bell },
+      ]
+    },
+    {
+      group: "My App",
+      items: [
+        { name: "My Subscription", href: "/member/subscription", icon: CreditCard },
+        { name: "My Workout Plan", href: "/member/workout-plan", icon: Dumbbell },
+        { name: "My Diet Plan", href: "/member/diet-plan", icon: Utensils },
+      ]
+    },
+    {
+      group: "Account",
+      items: [
+        { name: "Payments", href: "/member/payments", icon: Receipt },
+        { name: "My Profile", href: "/member/profile", icon: Users },
+      ]
+    }
   ];
 
-  const superAdminLinks = [
-    { name: "Super Admin", href: "/super-admin", icon: LayoutDashboard },
-    { name: "All Gyms", href: "/super-admin/gyms", icon: Building2 },
-    { name: "Global Users", href: "/super-admin/users", icon: Users },
+  const superAdminNavGroups = [
+    {
+      group: "Overview",
+      items: [
+        { name: "Super Admin", href: "/super-admin", icon: LayoutDashboard },
+      ]
+    },
+    {
+      group: "Network",
+      items: [
+        { name: "All Gyms", href: "/super-admin/gyms", icon: Building2 },
+        { name: "Global Users", href: "/super-admin/users", icon: Users },
+      ]
+    }
   ];
 
-  let links = memberLinks;
-  if (role === "GYM_OWNER") links = ownerLinks;
-  if (role === "SUPER_ADMIN") links = superAdminLinks;
-  if (role === "TRAINER") links = trainerLinks;
+  let navGroups = memberNavGroups;
+  if (role === "GYM_OWNER") navGroups = ownerNavGroups;
+  if (role === "SUPER_ADMIN") navGroups = superAdminNavGroups;
+  if (role === "TRAINER") navGroups = trainerNavGroups;
+
+  // Flatten links for utility tasks (titles, bottom nav)
+  const links = navGroups.flatMap(group => group.items);
 
   // Brand display logic
   let brandName = "FitHubX";
@@ -157,74 +221,92 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex w-full h-screen bg-background text-foreground overflow-hidden">
         {/* Sidebar (Tablet/Desktop & Mobile Sheet) */}
         <Sidebar className="border-r border-border">
-          <SidebarHeader className="p-6 border-b border-border">
-            <h1 className="text-xl font-bold flex items-center gap-2 text-primary truncate">
-              {brandIcon}
-              <span className="truncate">{brandName}</span>
+          <SidebarHeader className="p-5 border-b border-border bg-card relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <h1 className="text-xl font-bold flex items-center gap-3 text-primary truncate relative z-10">
+              <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl text-primary shadow-sm border border-primary/20 shrink-0">
+                {brandIcon}
+              </div>
+              <span className="truncate bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60 dark:from-white dark:to-white/60">
+                {brandName}
+              </span>
             </h1>
-            <span className="text-[10px] text-muted-foreground mt-1 block uppercase font-bold tracking-widest">
+            <span className="text-[10px] text-muted-foreground mt-3 block uppercase font-extrabold tracking-[0.2em] relative z-10 ml-[52px]">
               {brandSub}
             </span>
           </SidebarHeader>
 
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {links.map((link) => {
-                    const Icon = link.icon;
-                    const isRoot = link.href === "/owner" || link.href === "/trainer" || link.href === "/super-admin" || link.href === "/member/dashboard";
-                    const isActive = pathname === link.href || (!isRoot && pathname.startsWith(link.href + '/'));
+          <SidebarContent className="px-1 custom-scrollbar">
+            {navGroups.map((group) => (
+              <SidebarGroup key={group.group} className="pt-2 pb-0">
+                <SidebarGroupLabel className="px-3 text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">
+                  {group.group}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((link) => {
+                      const Icon = link.icon;
+                      const isRoot = link.href === "/owner" || link.href === "/trainer" || link.href === "/super-admin" || link.href === "/member/dashboard";
+                      const isActive = pathname === link.href || (!isRoot && pathname.startsWith(link.href + '/'));
 
-                    return (
-                      <SidebarMenuItem key={link.href}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          tooltip={link.name}
-                          className={`font-medium h-12 ${isActive ? "bg-primary/10 text-primary" : ""}`}
-                          render={
-                            <Link href={link.href} className="flex items-center justify-between w-full h-full group">
-                              <div className="flex items-center gap-3">
-                                <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
-                                <span>{link.name}</span>
-                              </div>
-                              {link.name === "Notifications" && unreadCount > 0 && (
-                                <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex shrink-0 shadow-sm animate-pulse">
-                                  {unreadCount > 99 ? "99+" : unreadCount}
-                                </span>
-                              )}
-                            </Link>
-                          }
-                        />
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+                      return (
+                        <SidebarMenuItem key={link.href} className="px-2 py-0.5">
+                          <SidebarMenuButton
+                            isActive={isActive}
+                            tooltip={link.name}
+                            className={cn(
+                              "font-semibold h-10 transition-all duration-300 rounded-xl group relative overflow-hidden",
+                              isActive 
+                                ? "bg-primary/10 text-primary hover:bg-primary/15" 
+                                : "hover:bg-muted text-muted-foreground"
+                            )}
+                            render={
+                              <Link href={link.href} className="flex items-center justify-between w-full h-full z-10 relative">
+                                <div className="flex items-center gap-3 px-2">
+                                  <Icon className={cn("w-4 h-4", isActive ? "text-primary dark:text-primary" : "text-muted-foreground")} />
+                                  <span className={cn("tracking-wide text-[13px]", isActive ? "font-bold text-primary dark:text-primary" : "font-semibold")}>{link.name}</span>
+                                </div>
+                                {link.name === "Notifications" && unreadCount > 0 && (
+                                  <span className={cn(
+                                    "text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-flex shrink-0 shadow-sm animate-pulse mr-2",
+                                    isActive ? "bg-primary text-primary-foreground" : "bg-rose-500 text-white"
+                                  )}>
+                                    {unreadCount > 99 ? "99+" : unreadCount}
+                                  </span>
+                                )}
+                              </Link>
+                            }
+                          />
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
           </SidebarContent>
 
-          <SidebarFooter className="p-4 border-t border-border">
-            <div className="flex items-center gap-3 px-2 py-2 mb-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden shrink-0">
+          <SidebarFooter className="p-4 border-t border-border bg-card/50 backdrop-blur-sm z-20">
+            <div className="flex items-center gap-3 px-3 py-3 mb-3 bg-muted/40 rounded-2xl border border-border/50 shadow-sm transition-all hover:bg-muted/60">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden shrink-0 shadow-sm border border-primary/20">
                 {session?.user?.image ? (
                   <img src={session.user.image} alt={session.user.name || "User"} className="w-full h-full object-cover" />
                 ) : (
                   session?.user?.name?.charAt(0) || "U"
                 )}
               </div>
-              <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-foreground truncate">
+              <div className="overflow-hidden flex-1">
+                <p className="text-sm font-bold text-foreground truncate">
                   {session?.user?.name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
+                <p className="text-xs text-muted-foreground truncate font-medium">{session?.user?.email}</p>
               </div>
             </div>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-destructive/10 rounded-xl transition-all font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-sm border border-transparent hover:border-rose-600 hover:shadow-rose-500/20 group"
             >
-              <LogOut className="w-5 h-5 text-destructive" />
+              <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               Sign Out
             </button>
           </SidebarFooter>
@@ -275,7 +357,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   )}
                 >
                   <div className="relative">
-                    <Icon className={cn("w-5 h-5", isActive ? "scale-110" : "scale-100")} />
+                    <Icon className="w-5 h-5" />
                     {link.name === "Notifications" && unreadCount > 0 && (
                       <span className="absolute -top-1 -right-2 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
                     )}

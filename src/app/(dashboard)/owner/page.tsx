@@ -112,17 +112,17 @@ export default async function OwnerDashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+      <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 scrollbar-none">
         {stats.map((stat) => (
-          <Card key={stat.name} className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group bg-card">
+          <Card key={stat.name} className="min-w-[160px] sm:min-w-0 shrink-0 snap-center border-border/50 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group bg-card">
             <div className={`absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br ${stat.halo} to-transparent blur-2xl rounded-full transition-transform group-hover:scale-150 duration-500`} />
-            <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 relative z-10">
-              <div className={`p-2.5 sm:p-3.5 rounded-xl ${stat.bg} dark:bg-opacity-20 flex-shrink-0`}>
+            <CardContent className="p-4 sm:p-6 flex flex-col items-start gap-2 relative z-10">
+              <div className={`p-2.5 sm:p-3.5 rounded-xl ${stat.bg} dark:bg-opacity-20 flex-shrink-0 mb-1`}>
                 <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color} dark:brightness-110`} />
               </div>
               <div className="w-full">
                 <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{stat.name}</p>
-                <p className="text-lg sm:text-2xl font-bold text-foreground mt-0.5 sm:mt-1 tracking-tight truncate">{stat.value}</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">{stat.value}</p>
               </div>
             </CardContent>
           </Card>
@@ -130,10 +130,10 @@ export default async function OwnerDashboardPage() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div className="lg:col-span-2 min-h-[300px]">
+        <div className="lg:col-span-2 min-h-[300px] min-w-0">
           <RevenueChart data={chartData} />
         </div>
-        <div className="lg:col-span-1 min-h-[300px]">
+        <div className="lg:col-span-1 min-h-[300px] min-w-0">
           <ActiveMembersPieChart activeCount={activeMembersCount} inactiveCount={inactiveMembersCount} />
         </div>
       </div>

@@ -15,7 +15,8 @@ interface Notification {
 }
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 export default function MemberNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,22 +120,24 @@ export default function MemberNotificationsPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <input
-          type="text"
+        <Input
           placeholder="Search notifications..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+          className="flex-1 rounded-xl shadow-sm h-11"
         />
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary shadow-sm min-w-[150px]"
-        >
-          <option value="all">All Notifications</option>
-          <option value="unread">Unread Only</option>
-          <option value="read">Read Only</option>
-        </select>
+        <div className="min-w-[160px]">
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-full rounded-xl shadow-sm h-11 border-input">
+              <SelectValue placeholder="All Notifications" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Notifications</SelectItem>
+              <SelectItem value="unread">Unread Only</SelectItem>
+              <SelectItem value="read">Read Only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="space-y-4">

@@ -16,7 +16,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const { id } = await params;
-    const { name, price, duration } = await req.json();
+    const body = await req.json();
+    const { name, price, duration, discount, discountType } = body;
 
     // Verify plan belongs to this gym
     const existingPlan = await prisma.plan.findUnique({ where: { id } });
@@ -30,7 +31,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const plan = await prisma.plan.update({
       where: { id },
-      data: { name, price: parseFloat(price), duration: parseInt(duration) },
+      data: { 
+        name, 
+        price: parseFloat(price), 
+        duration: parseInt(duration),
+        discount: discount != null ? parseFloat(discount) : 0,
+        discountType: discountType || "PERCENTAGE",
+      },
     });
 
     return NextResponse.json({ message: "Plan updated", plan });

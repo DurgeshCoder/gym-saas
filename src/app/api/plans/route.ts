@@ -82,10 +82,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid input", errors: result.error.issues }, { status: 400 });
     }
 
-    const { name, price, duration } = result.data;
+    const { name, price, duration, discount, discountType } = result.data;
 
     const plan = await prisma.plan.create({
-      data: { name, price, duration, gymId },
+      data: { name, price, duration, discount, discountType, gymId },
     });
 
     return NextResponse.json({ message: "Plan created", plan }, { status: 201 });

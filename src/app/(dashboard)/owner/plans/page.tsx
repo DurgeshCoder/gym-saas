@@ -15,12 +15,15 @@ import { DataTable, SearchFilterBar, type Column, type FilterConfig } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PlanRecord {
   id: string;
   name: string;
   price: number;
   duration: number;
+  discount: number;
+  discountType: string;
   createdAt: string;
   _count: { subscriptions: number };
 }
@@ -50,8 +53,8 @@ export default function OwnerPlansPage() {
   const [error, setError] = useState("");
 
   // Forms
-  const emptyCreate = { name: "", price: "", duration: "" };
-  const emptyEdit = { id: "", name: "", price: "", duration: "" };
+  const emptyCreate = { name: "", price: "", duration: "", discount: "0", discountType: "PERCENTAGE" };
+  const emptyEdit = { id: "", name: "", price: "", duration: "", discount: "0", discountType: "PERCENTAGE" };
   const [createData, setCreateData] = useState(emptyCreate);
   const [editData, setEditData] = useState(emptyEdit);
 
@@ -100,6 +103,8 @@ export default function OwnerPlansPage() {
           name: createData.name,
           price: parseFloat(createData.price),
           duration: parseInt(createData.duration),
+          discount: parseFloat(createData.discount) || 0,
+          discountType: createData.discountType,
         }),
       });
       if (res.ok) {
@@ -117,7 +122,14 @@ export default function OwnerPlansPage() {
 
   // Edit
   const openEdit = (p: PlanRecord) => {
-    setEditData({ id: p.id, name: p.name, price: p.price.toString(), duration: p.duration.toString() });
+    setEditData({ 
+      id: p.id, 
+      name: p.name, 
+      price: p.price.toString(), 
+      duration: p.duration.toString(),
+      discount: (p.discount || 0).toString(),
+      discountType: p.discountType || "PERCENTAGE",
+    });
     setError("");
     setShowEditModal(true);
   };
@@ -132,8 +144,10 @@ export default function OwnerPlansPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: editData.name,
-          price: editData.price,
-          duration: editData.duration,
+          price: parseFloat(editData.price),
+          duration: parseInt(editData.duration),
+          discount: parseFloat(editData.discount) || 0,
+          discountType: editData.discountType,
         }),
       });
       if (res.ok) {
@@ -223,12 +237,20 @@ export default function OwnerPlansPage() {
     },
     {
       key: "price",
-      header: "Price",
+      header: "Price & Discount",
       render: (p) => (
-        <span className="inline-flex items-center gap-1 text-base font-bold text-emerald-600 dark:text-emerald-400">
-          <IndianRupee className="w-4 h-4" />
-          {formatPrice(p.price).replace("₹", "")}
-        </span>
+        <div className="flex flex-col">
+          <span className="inline-flex items-center gap-1 text-base font-bold text-emerald-600 dark:text-emerald-400">
+            <IndianRupee className="w-4 h-4" />
+            {formatPrice(p.price).replace("₹", "")}
+          </span>
+          {p.discount > 0 && (
+            <span className="text-xs text-amber-500 font-semibold flex items-center gap-1">
+              <Tag className="w-3 h-3" />
+              {p.discountType === "PERCENTAGE" ? `${p.discount}% OFF` : `₹${p.discount} OFF`}
+            </span>
+          )}
+        </div>
       ),
     },
     {
@@ -365,6 +387,21 @@ export default function OwnerPlansPage() {
                 ))}
               </div>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Discount Config</label>
+              <div className="flex gap-2">
+                <Input type="number" min="0" step="1" value={createData.discount} onChange={(e) => setCreateData({ ...createData, discount: e.target.value })} placeholder="0" className="w-2/3" />
+                <Select value={createData.discountType} onValueChange={(val) => setCreateData({ ...createData, discountType: val })}>
+                  <SelectTrigger className="w-1/3">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PERCENTAGE">%</SelectItem>
+                    <SelectItem value="FIXED">Flat (₹)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
               <Button type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create Plan"}</Button>
@@ -406,6 +443,21 @@ export default function OwnerPlansPage() {
                     {p.label}
                   </button>
                 ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Discount Config</label>
+              <div className="flex gap-2">
+                <Input type="number" min="0" step="1" value={editData.discount} onChange={(e) => setEditData({ ...editData, discount: e.target.value })} placeholder="0" className="w-2/3" />
+                <Select value={editData.discountType} onValueChange={(val) => setEditData({ ...editData, discountType: val })}>
+                  <SelectTrigger className="w-1/3">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PERCENTAGE">%</SelectItem>
+                    <SelectItem value="FIXED">Flat (₹)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter className="pt-4">

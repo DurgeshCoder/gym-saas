@@ -104,14 +104,16 @@ model User {
 // -----------------------------------------------------------------------------
 
 model Plan {
-  id        String   @id @default(cuid())
-  name      String
-  price     Float
-  duration  Int      // Duration in days
-  gymId     String
-  gym       Gym      @relation(fields: [gymId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(cuid())
+  name         String
+  price        Float
+  duration     Int          // Duration in days
+  discount     Float?       @default(0)
+  discountType String?      @default("PERCENTAGE") // "PERCENTAGE" or "FIXED"
+  gymId        String
+  gym          Gym          @relation(fields: [gymId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   subscriptions Subscription[]
 }

@@ -49,6 +49,8 @@ interface PlanOption {
   name: string;
   price: number;
   duration: number;
+  discount?: number;
+  discountType?: string;
 }
 
 export default function OwnerSubscriptionsPage() {
@@ -272,6 +274,18 @@ export default function OwnerSubscriptionsPage() {
   // Helpers
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
+
+  const getDiscountedPrice = (plan: PlanOption) => {
+    let finalAmount = plan.price;
+    if (plan.discount && plan.discount > 0) {
+      if (plan.discountType === "FIXED") {
+        finalAmount = Math.max(0, plan.price - plan.discount);
+      } else if (plan.discountType === "PERCENTAGE") {
+        finalAmount = Math.max(0, plan.price - (plan.price * plan.discount) / 100);
+      }
+    }
+    return finalAmount;
+  };
 
   const isExpired = (endDate: string) => new Date(endDate) < new Date();
 
@@ -521,7 +535,12 @@ export default function OwnerSubscriptionsPage() {
                     <p className="font-bold text-primary">{selectedPlan.name}</p>
                     <p className="text-xs text-primary/80 mt-0.5">{selectedPlan.duration} days duration</p>
                   </div>
-                  <p className="text-xl font-extrabold text-primary">{formatPrice(selectedPlan.price)}</p>
+                  <div className="text-right">
+                    <p className="text-xl font-extrabold text-primary">{formatPrice(getDiscountedPrice(selectedPlan))}</p>
+                    {getDiscountedPrice(selectedPlan) < selectedPlan.price && (
+                      <p className="text-xs text-primary/70 line-through">{formatPrice(selectedPlan.price)}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

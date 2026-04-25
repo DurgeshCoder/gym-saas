@@ -30,7 +30,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         trainer: { select: { id: true, name: true, email: true } },
         subscriptions: {
           include: {
-            plan: { select: { id: true, name: true, price: true, duration: true } },
+            plan: { select: { id: true, name: true, price: true, duration: true, discount: true, discountType: true } },
           },
           orderBy: { createdAt: "desc" },
         },

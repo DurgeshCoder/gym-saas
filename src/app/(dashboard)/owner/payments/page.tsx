@@ -41,7 +41,7 @@ interface UserOption {
   name: string;
   email: string;
   profilePhoto?: string | null;
-  subscriptions?: Array<{ id: string; active: boolean; plan: { name: string; price: number } }>;
+  subscriptions?: Array<{ id: string; active: boolean; plan: { name: string; price: number; discount?: number; discountType?: string; } }>;
 }
 
 export default function OwnerPaymentsPage() {
@@ -176,6 +176,18 @@ export default function OwnerPaymentsPage() {
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
+
+  const getDiscountedPrice = (plan: { price: number; discount?: number; discountType?: string }) => {
+    let finalAmount = plan.price;
+    if (plan.discount && plan.discount > 0) {
+      if (plan.discountType === "FIXED") {
+        finalAmount = Math.max(0, plan.price - plan.discount);
+      } else if (plan.discountType === "PERCENTAGE") {
+        finalAmount = Math.max(0, plan.price - (plan.price * plan.discount) / 100);
+      }
+    }
+    return finalAmount;
+  };
 
   const filters: FilterConfig[] = [
     {
@@ -400,15 +412,21 @@ export default function OwnerPaymentsPage() {
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active/Recent Subscription to Extend</label>
                 <div className="grid gap-2">
                   {selectedUserFull?.subscriptions && selectedUserFull.subscriptions.length > 0 ? (
-                    selectedUserFull.subscriptions.map(sub => (
-                      <div key={sub.id} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"}`} onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: sub.plan.price.toString() })}>
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">{formatPrice(sub.plan.price)} renewal fee</p>
+                    selectedUserFull.subscriptions.map(sub => {
+                      const finalPrice = getDiscountedPrice(sub.plan);
+                      return (
+                        <div key={sub.id} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${createData.subscriptionId === sub.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"}`} onClick={() => setCreateData({ ...createData, subscriptionId: sub.id, amount: finalPrice.toString() })}>
+                          <div>
+                            <p className="font-bold text-slate-800 dark:text-white text-sm">{sub.plan.name}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">
+                              {formatPrice(finalPrice)} renewal fee 
+                              {finalPrice < sub.plan.price && <span className="line-through ml-1 opacity-60">{formatPrice(sub.plan.price)}</span>}
+                            </p>
+                          </div>
+                          {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
                         </div>
-                        {createData.subscriptionId === sub.id && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg font-bold">No subscription found. Create a subscription first to extend it.</p>
                   )}

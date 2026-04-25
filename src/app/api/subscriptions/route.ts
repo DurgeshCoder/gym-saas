@@ -147,10 +147,20 @@ export async function POST(req: Request) {
         },
       });
 
+      // Calculate discounted price
+      let finalAmount = plan.price;
+      if (plan.discount && plan.discount > 0) {
+        if (plan.discountType === "FIXED") {
+          finalAmount = Math.max(0, plan.price - plan.discount);
+        } else if (plan.discountType === "PERCENTAGE") {
+          finalAmount = Math.max(0, plan.price - (plan.price * plan.discount) / 100);
+        }
+      }
+
       // Auto-create a payment record
       const payment = await tx.payment.create({
         data: {
-          amount: plan.price,
+          amount: finalAmount,
           paymentMethod: paymentMethod || "CASH",
           status: "SUCCESS",
           userId,

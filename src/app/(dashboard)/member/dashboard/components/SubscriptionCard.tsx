@@ -47,6 +47,15 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
     )
   );
 
+  let finalPrice = plan.price;
+  if (plan.discount && plan.discount > 0) {
+    if (plan.discountType === "FIXED") {
+      finalPrice = Math.max(0, plan.price - plan.discount);
+    } else if (plan.discountType === "PERCENTAGE") {
+      finalPrice = Math.max(0, plan.price - (plan.price * plan.discount) / 100);
+    }
+  }
+
   return (
     <Card className="h-full relative overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
@@ -68,10 +77,20 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
       <CardContent className="flex-1 space-y-6">
         <div>
           <h4 className="text-3xl font-black mb-1">{plan.name}</h4>
-          <p className="text-2xl font-bold text-muted-foreground">
-            ₹{plan.price}
-            <span className="text-sm font-medium ml-1">/{plan.duration} days</span>
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold text-muted-foreground flex items-end">
+              ₹{finalPrice}
+              <span className="text-sm font-medium ml-1 pb-1">/{plan.duration} days</span>
+            </p>
+            {finalPrice < plan.price && (
+              <p className="text-sm line-through text-muted-foreground/60">₹{plan.price}</p>
+            )}
+            {plan.discount > 0 && (
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-800 ml-2">
+                {plan.discountType === "PERCENTAGE" ? `${plan.discount}% OFF` : `₹${plan.discount} OFF`}
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4 bg-muted/30 p-4 rounded-xl border">
@@ -109,7 +128,7 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
           </div>
           <div className="pt-2">
             {canPay ? (
-              <RazorpayButton amount={plan.price} subscriptionId={subscription.id} />
+              <RazorpayButton amount={finalPrice} subscriptionId={subscription.id} />
             ) : (
               <div className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg border border-border/60 bg-muted/40 text-sm font-medium text-muted-foreground cursor-not-allowed select-none">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
